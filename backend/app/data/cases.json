@@ -1,0 +1,160 @@
+{
+ "premise": {
+  "headline": "Indian banks detect large frauds an average of 55 months after they occur.",
+  "detail": "RBI's Annual Report for 2018-19 put the average gap between a fraud occurring and a bank detecting it at 22 months. For frauds of Rs 100 crore and above - Rs 52,200 crore reported that year - the average gap was 55 months, close to five years.",
+  "source": "RBI Annual Report 2018-19, as reported by Business Standard, August 2019",
+  "url": "https://www.business-standard.com/article/economy-policy/bank-fraud-rise-15-in-2018-19-amount-pegged-at-rs-71-543-cr-rbi-119082900991_1.html"
+ },
+ "cases": [
+  {
+   "id": "abg",
+   "entity": "ABG Shipyard",
+   "sector": "Shipbuilding",
+   "amount_cr": 22842,
+   "people": [
+    "Rishi Kamlesh Agarwal"
+   ],
+   "role": "Former chairman and managing director",
+   "banks": "28-bank consortium led by State Bank of India and ICICI Bank",
+   "signal": "An Ernst & Young forensic audit found that loans drawn between April 2012 and June 2017 were diverted to buy assets for related parties.",
+   "detail": "The consortium's exposure reached Rs 22,842 crore, with ICICI Bank carrying about Rs 7,089 crore and IDBI Bank about Rs 3,639 crore. The account was declared fraud by the consortium in January 2020; the CBI registered its FIR on 2 February 2022.",
+   "first_signal": "April 2012",
+   "acted": "2 February 2022",
+   "lag_months": 118,
+   "would_fire": [
+    "DISBURSAL_SWEEP",
+    "RELATED_PARTY",
+    "DSCR_BREACH"
+   ],
+   "outcome": "The CBI FIR of 2 February 2022 was the largest bank fraud case it had registered. The accused deny the allegations and the matter is before the courts.",
+   "source": "CBI FIR on SBI's complaint, 2 February 2022; Ernst & Young forensic audit",
+   "url": "https://www.business-standard.com/article/companies/abg-shipyard-its-directors-booked-by-cbi-in-rs-22-842-cr-bank-fraud-case-122021200845_1.html"
+  },
+  {
+   "id": "pnb_lou",
+   "entity": "Punjab National Bank - Letters of Undertaking",
+   "sector": "Trade finance",
+   "amount_cr": 14357,
+   "signal": "1,212 letters of undertaking issued against no sanctioned limit and never entered in the core banking system.",
+   "first_signal": "10 March 2011",
+   "acted": "29 January 2018",
+   "lag_months": 83,
+   "outcome": "PNB filed a CBI complaint in January 2018. Nirav Modi and Mehul Choksi were named; both contest the allegations and proceedings continue.",
+   "source": "PNB complaint to CBI, 29 January 2018; Punjab National Bank Scam, Wikipedia",
+   "url": "https://en.wikipedia.org/wiki/Punjab_National_Bank_Scam",
+   "people": [
+    "Nirav Modi",
+    "Mehul Choksi"
+   ],
+   "role": "Partners of the borrowing firms; two PNB officials were also named",
+   "would_fire": [
+    "DISBURSAL_SWEEP",
+    "RELATED_PARTY"
+   ],
+   "detail": "Letters of undertaking were issued from the Brady House branch in Mumbai without sanctioned limits and were never recorded in the core banking system, so the exposure was invisible to PNB's own reporting. The first ran on 10 March 2011; 1,212 more followed over roughly seven years.",
+   "banks": "Punjab National Bank; overseas credit drawn on other Indian banks' branches"
+  },
+  {
+   "id": "rhfl",
+   "entity": "Reliance Home Finance",
+   "sector": "Housing finance",
+   "amount_cr": 7900,
+   "signal": "General purpose corporate loans grew from about Rs 900 crore at 31 March 2018 to about Rs 7,900 crore at 31 March 2019 - close to nine times in a single year. SEBI recorded that eight entities were reclassified from related to non-related party just before Rs 1,323.43 crore was disbursed to them.",
+   "first_signal": "March 2018",
+   "acted": "22 August 2024",
+   "lag_months": 77,
+   "outcome": "SEBI's 222-page final order of 22 August 2024 barred Anil Ambani and 24 others from the securities market for five years, with penalties of about Rs 624 crore. Mr Ambani denies the allegations and has said he is reviewing his options.",
+   "source": "SEBI Final Order in the matter of Reliance Home Finance Limited, 22 August 2024",
+   "url": "https://www.sebi.gov.in/enforcement/orders/aug-2024/final-order-in-the-matter-of-reliance-home-finance-limited_86052.html",
+   "people": [
+    "Anil Ambani"
+   ],
+   "role": "Chairman of the Reliance Group; barred by SEBI for five years",
+   "would_fire": [
+    "RELATED_PARTY",
+    "UNSECURED_RAMP",
+    "DISBURSAL_SWEEP"
+   ],
+   "detail": "General purpose corporate loans grew roughly nine times in a single financial year, to borrowers with thin financials. SEBI recorded that eight entities were reclassified from related to non-related party shortly before Rs 1,323.43 crore was disbursed to them.",
+   "banks": "Public debenture holders and lenders to Reliance Home Finance"
+  },
+  {
+   "id": "dhfl",
+   "entity": "Dewan Housing Finance (DHFL)",
+   "sector": "Housing finance",
+   "amount_cr": 34615,
+   "people": [
+    "Kapil Wadhawan",
+    "Dheeraj Wadhawan"
+   ],
+   "role": "Former chairman and managing director; former director",
+   "banks": "17-member consortium led by Union Bank of India",
+   "signal": "An audit of the books found about Rs 29,000 crore disbursed to 66 entities connected to the promoters, with funds round-tripped to create assets for them.",
+   "detail": "The consortium had extended credit facilities of about Rs 42,871 crore between 2010 and 2018. Repayment defaults began in May 2019. The CBI registered its case on 20 June 2022 on Union Bank of India's complaint.",
+   "first_signal": "May 2019",
+   "acted": "20 June 2022",
+   "lag_months": 37,
+   "would_fire": [
+    "RELATED_PARTY",
+    "DISBURSAL_SWEEP",
+    "UNSECURED_RAMP"
+   ],
+   "outcome": "The CBI case of 20 June 2022 was, at the time, the biggest banking fraud it had probed. The accused deny the allegations and proceedings continue.",
+   "source": "CBI FIR on Union Bank of India's complaint, 20 June 2022",
+   "url": "https://www.business-standard.com/amp/article/companies/cbi-books-dhfl-former-cmd-and-director-in-rs-34-615-crore-bank-fraud-case-122062200611_1.html"
+  },
+  {
+   "id": "kingfisher",
+   "entity": "Kingfisher Airlines",
+   "sector": "Aviation",
+   "amount_cr": 9000,
+   "signal": "The Kingfisher brand, pledged as the largest single piece of collateral, was valued at Rs 4,111 crore by Grant Thornton in 2011. Later lender-commissioned valuations put it at a small fraction of that while the debt stayed fixed.",
+   "first_signal": "2011",
+   "acted": "October 2012",
+   "lag_months": 18,
+   "outcome": "The airline was grounded in October 2012 owing about Rs 9,000 crore to a 17-bank consortium led by SBI. Vijay Mallya denies willful default and is contesting the matters.",
+   "source": "Grant Thornton brand valuation, 2011; Business Standard reporting on the SBI-led consortium",
+   "url": "https://www.business-standard.com/amp/article/companies/fast-recovery-of-rs-7-800-cr-kingfisher-debt-unlikely-sbi-112071000110_1.html",
+   "people": [
+    "Vijay Mallya"
+   ],
+   "role": "Chairman of Kingfisher Airlines and personal guarantor",
+   "would_fire": [
+    "COLLATERAL_EROSION",
+    "DSCR_BREACH",
+    "PLEDGE_STRESS"
+   ],
+   "detail": "The Kingfisher brand was pledged as the single largest piece of collateral, valued at Rs 4,111 crore by Grant Thornton in 2011. The airline's cash generation never covered debt service and the collateral pool of about Rs 5,238 crore was heavily weighted to that one intangible.",
+   "banks": "17-bank consortium led by State Bank of India"
+  }
+ ],
+ "translation": [
+  {
+   "corporate": "Collateral value falling while the debt stays fixed",
+   "retail": "Income shrinking month on month while the EMI stays the same",
+   "signal": "emi_to_income rising past 0.5"
+  },
+  {
+   "corporate": "Restructuring granted despite no recovery in earnings",
+   "retail": "A second EMI deferral requested with no improvement in inflows",
+   "signal": "repeat restructure flag"
+  },
+  {
+   "corporate": "Borrowed funds routed straight out to linked parties",
+   "retail": "A loan lands and is swept to new payees within days",
+   "signal": "disbursal_sweep_out"
+  },
+  {
+   "corporate": "Circular transactions between a closed set of entities",
+   "retail": "Money cycling between a handful of accounts - the mule pattern",
+   "signal": "new_payee_7d + velocity rules"
+  },
+  {
+   "corporate": "Pledging more to service existing obligations",
+   "retail": "Rising unsecured borrowing used to cover fixed repayments",
+   "signal": "credit_utilisation_proxy trend"
+  }
+ ],
+ "disclaimer": "Public-record figures only: regulator orders, bank filings and court rulings. They are cited to show how long detection took, not to assert guilt. Matters remain before the courts and the individuals named deny the allegations. The exposures monitored below are fictional entities created for this prototype.",
+ "retrospective_note": "Each case lists the ArthSaathi corporate rules that the publicly documented facts would have triggered. The rules are applied to what regulators and auditors found, not to invented account data."
+}

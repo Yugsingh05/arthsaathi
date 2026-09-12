@@ -1,0 +1,36 @@
+{
+  "today": "2026-09-12",
+  "checkpoints": [
+    {
+      "key": "t1",
+      "date": "2026-07-04",
+      "label": "Baseline",
+      "sub": "No risk signals",
+      "month": "Jul 2026"
+    },
+    {
+      "key": "t2",
+      "date": "2026-08-22",
+      "label": "Stress detected",
+      "sub": "Income down 40%, EMI missed",
+      "month": "Aug 2026"
+    },
+    {
+      "key": "t3",
+      "date": "2026-09-12",
+      "label": "Fraud alert",
+      "sub": "Four transfers at 02:00",
+      "month": "Sep 2026"
+    }
+  ],
+  "demo_customers": [
+    "CUST0001",
+    "CUST0002",
+    "CUST0003",
+    "CUST0004",
+    "CUST0005",
+    "CUST0006",
+    "CUST0007",
+    "CUST0008"
+  ]
+}

@@ -1,0 +1,182 @@
+version: 1
+
+stress:
+  threshold: 0.55
+  credit_pause_days: 60
+  anomaly_weight: 0.25
+  rules:
+    - id: emi_missed
+      when: emi_bounce_90d >= 1
+      weight: 0.34
+      code: EMI_MISSED
+      says: An EMI did not go through in the last 90 days.
+      says_hi: पिछले 90 दिनों में एक EMI नहीं कट पाई।
+      says_gu: છેલ્લા 90 દિવસમાં એક EMI કપાઈ નથી.
+    - id: inflow_drop
+      when: inflow_30d_delta <= -0.25
+      weight: 0.30
+      code: INFLOW_DROP
+      says: Money coming in has fallen sharply against last month.
+      says_hi: पिछले महीने के मुक़ाबले आमदनी काफ़ी घटी है।
+      says_gu: ગયા મહિનાની સરખામણીએ આવક ઘણી ઘટી છે.
+    - id: emi_burden
+      when: emi_to_income >= 0.50
+      weight: 0.20
+      code: EMI_BURDEN
+      says: EMIs now take half or more of monthly income.
+      says_hi: EMI अब मासिक आय का आधा या उससे ज़्यादा ले रही है।
+      says_gu: EMI હવે માસિક આવકનો અડધો કે વધુ ભાગ લે છે.
+    - id: negative_savings
+      when: savings_rate <= -0.15
+      weight: 0.15
+      code: DISSAVING
+      says: Spending is running ahead of income.
+      says_hi: ख़र्च आमदनी से आगे निकल रहा है।
+      says_gu: ખર્ચ આવક કરતાં આગળ નીકળી રહ્યો છે.
+    - id: cash_spike
+      when: cash_share >= 0.45
+      weight: 0.10
+      code: CASH_SPIKE
+      says: An unusual share of spending has moved to cash.
+      says_hi: ख़र्च का असामान्य हिस्सा नक़द में चला गया है।
+      says_gu: ખર્ચનો અસામાન્ય ભાગ રોકડમાં ગયો છે.
+    - id: balance_floor
+      when: min_balance_30d <= 500
+      weight: 0.12
+      code: LOW_BALANCE
+      says: The account balance touched near zero this month.
+      says_hi: इस महीने खाते का बैलेंस लगभग शून्य तक पहुँचा।
+      says_gu: આ મહિને ખાતાનું બેલેન્સ લગભગ શૂન્ય સુધી પહોંચ્યું.
+    - id: income_unstable
+      when: income_volatility >= 0.55
+      weight: 0.08
+      code: INCOME_UNSTABLE
+      says: Income has been unpredictable month to month.
+      says_hi: आमदनी हर महीने अनिश्चित रही है।
+      says_gu: આવક દર મહિને અનિશ્ચિત રહી છે.
+    - id: repeat_deferral
+      when: restructure_count_365d >= 2
+      weight: 0.26
+      code: REPEAT_DEFERRAL
+      says: A second EMI deferral was taken with no recovery in income.
+      says_hi: आय में सुधार के बिना दूसरी बार EMI टाली गई।
+      says_gu: આવકમાં સુધારા વગર બીજી વાર EMI મુલતવી રખાઈ.
+    - id: unsecured_ramp
+      when: loan_draws_180d >= 3
+      weight: 0.24
+      code: UNSECURED_RAMP
+      says: Three or more new loans drawn in six months to cover existing repayments.
+      says_hi: छह महीनों में तीन या ज़्यादा नए लोन, पुरानी क़िस्तें चुकाने के लिए।
+      says_gu: છ મહિનામાં ત્રણ કે વધુ નવી લોન, જૂના હપ્તા ભરવા માટે.
+
+fraud:
+  threshold: 0.55
+  anomaly_weight: 0.30
+  hold_action: protective_hold
+  rules:
+    - id: night_activity
+      when: night_txn_share >= 0.02
+      weight: 0.28
+      code: ODD_HOUR
+      says: Transfers were made in the middle of the night.
+      says_hi: रात के समय ट्रांसफ़र किए गए।
+      says_gu: રાત્રિના સમયે ટ્રાન્સફર થયા.
+    - id: new_payee_burst
+      when: new_payee_7d >= 3
+      weight: 0.32
+      code: NEW_PAYEE_BURST
+      says: Money went to several payees never paid before.
+      says_hi: ऐसे कई लोगों को पैसे गए जिन्हें पहले कभी नहीं भेजा।
+      says_gu: એવા ઘણા લોકોને પૈસા ગયા જેમને પહેલાં ક્યારેય મોકલ્યા નથી.
+    - id: large_debit_spike
+      when: large_debit_share >= 0.35
+      weight: 0.18
+      code: LARGE_DEBITS
+      says: Large debits are unusual for this account.
+      says_hi: इस खाते के लिए इतनी बड़ी निकासी असामान्य है।
+      says_gu: આ ખાતા માટે આટલી મોટી ઉપાડ અસામાન્ય છે.
+    - id: balance_sweep
+      when: min_balance_30d <= 1000 and large_debit_share >= 0.25
+      weight: 0.22
+      code: SWEEP_OUT
+      says: The balance was swept down quickly.
+      says_hi: बैलेंस बहुत तेज़ी से ख़ाली हुआ।
+      says_gu: બેલેન્સ ખૂબ ઝડપથી ખાલી થયું.
+    - id: disbursal_sweep
+      when: disbursal_sweep_pct >= 0.5
+      weight: 0.34
+      code: DISBURSAL_SWEEP
+      says: A loan landed and was moved straight out to new payees.
+      says_hi: लोन आते ही सीधे नए खातों में भेज दिया गया।
+      says_gu: લોન આવતાં જ સીધી નવા ખાતાંમાં મોકલાઈ ગઈ.
+    - id: circular_transfers
+      when: counterparty_recycle >= 0.25
+      weight: 0.26
+      code: CIRCULAR_FLOW
+      says: Money is cycling between the same handful of accounts.
+      says_hi: पैसा उन्हीं कुछ खातों के बीच घूम रहा है।
+      says_gu: પૈસા એ જ થોડા ખાતાં વચ્ચે ફરી રહ્યા છે.
+
+policy:
+  quiet_hours: {start_hour: 8, end_hour: 19}
+  max_nudges_per_week: 2
+  max_nudges_when_stressed: 1
+  max_credit_nudges_per_month: 1
+  min_benefit_score: 0.25
+  benefit_weight: 0.65
+  suppress_credit_when_stressed: true
+  require_reason_on_every_nudge: true
+  human_review_above_amount: 50000
+  eligibility:
+    kcc: occupation == 'Farmer'
+    two_wheeler_loan: monthly_income >= 12000
+    personal_loan: monthly_income >= 15000 and emi_to_income < 0.45
+    top_up_loan: emi_to_income > 0 and emi_to_income < 0.45
+    credit_card: monthly_income >= 20000 and salary_regularity >= 0.6
+    sweep_fd: avg_balance_30d >= 25000
+    sip_1000: savings_rate > 0
+    rd_2000: savings_rate > 0
+
+corporate:
+  threshold: 0.55
+  rules:
+    - id: collateral_erosion
+      when: collateral_cover < 0.8 and collateral_change_12m <= -0.25
+      weight: 0.30
+      code: COLLATERAL_EROSION
+      says: Security cover is falling while the debt stays fixed.
+    - id: no_recovery_restructure
+      when: restructure_count >= 2 and ebitda_change_12m <= 0
+      weight: 0.24
+      code: REPEAT_RESTRUCTURE
+      says: Restructured more than once with no recovery in earnings.
+    - id: disbursal_sweep
+      when: disbursal_sweep_pct >= 0.5
+      weight: 0.26
+      code: DISBURSAL_SWEEP
+      says: Most of the drawdown left the account within days of disbursal.
+    - id: related_party_concentration
+      when: related_party_share >= 0.4
+      weight: 0.28
+      code: RELATED_PARTY
+      says: A large share of lending went to entities linked to the borrower group.
+    - id: unsecured_ramp
+      when: unsecured_growth_12m >= 1.5
+      weight: 0.18
+      code: UNSECURED_RAMP
+      says: Unsecured borrowing is growing far faster than the business.
+    - id: pledge_stress
+      when: promoter_pledge_pct >= 0.75
+      weight: 0.14
+      code: PLEDGE_STRESS
+      says: Promoters have pledged most of their holding to service obligations.
+    - id: dscr_breach
+      when: dscr < 1.0
+      weight: 0.22
+      code: DSCR_BREACH
+      says: Cash generated no longer covers debt service.
+    - id: overdue
+      when: days_past_due >= 60
+      weight: 0.20
+      code: OVERDUE_60
+      says: Dues have been outstanding for more than 60 days.
