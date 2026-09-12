@@ -32,6 +32,48 @@ cd frontend && npm run dev
 
 See DEMO.md for the walkthrough.
 
+## Code quality
+
+SonarCloud analyses every push. The scanner always runs inside the
+`sonarsource/sonar-scanner-cli` container — same image in CI and on your
+machine — so local and CI reports never drift.
+
+**One-time setup**
+
+1. Sign in at [sonarcloud.io](https://sonarcloud.io) with GitHub and import
+   `Yugsingh05/arthsaathi`. Keep the generated organization and project keys —
+   if they differ from `yugsingh05` / `Yugsingh05_arthsaathi`, fix
+   `sonar-project.properties`.
+2. In the project's **Administration → Analysis Method**, turn
+   **Automatic Analysis** *off*. It conflicts with CI-based analysis.
+3. Generate a token at **My Account → Security**.
+4. Add it to GitHub: **Settings → Secrets and variables → Actions → New
+   repository secret**, named `SONAR_TOKEN`.
+5. For local scans, put the same token in a git-ignored `.env`:
+   `echo 'SONAR_TOKEN=your_token_here' >> .env`
+
+**On push** — `.github/workflows/sonarcloud.yml` runs the scanner container and
+uploads the report. Pull requests are analysed too and get inline comments.
+The job summary links straight to the report.
+
+**Locally, on Docker Desktop**
+
+```bash
+./scripts/sonar-scan.sh          # scans the current branch, prints the report URL
+```
+
+To scan automatically before every `git push`:
+
+```bash
+git config core.hooksPath scripts/hooks    # undo with: git config --unset core.hooksPath
+```
+
+The report lives at
+<https://sonarcloud.io/project/overview?id=Yugsingh05_arthsaathi>.
+
+Coverage is not reported yet — there is no test suite. When one lands, uncomment
+the `sonar.tests` and coverage lines in `sonar-project.properties`.
+
 ## Layout
 
 ```

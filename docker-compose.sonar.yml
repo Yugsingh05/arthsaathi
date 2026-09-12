@@ -1,0 +1,19 @@
+# Local SonarCloud scan, run on Docker Desktop.
+#   ./scripts/sonar-scan.sh
+# or, by hand:
+#   SONAR_TOKEN=xxx docker compose -f docker-compose.sonar.yml run --rm scanner
+
+services:
+  scanner:
+    image: sonarsource/sonar-scanner-cli:latest
+    environment:
+      SONAR_HOST_URL: https://sonarcloud.io
+      SONAR_TOKEN: ${SONAR_TOKEN:?set SONAR_TOKEN in .env or your shell}
+    volumes:
+      # the repo, at the path the scanner image expects
+      - .:/usr/src
+      # keep the analyser plugin cache between runs so repeat scans are fast
+      - sonar-cache:/opt/sonar-scanner/.sonar
+
+volumes:
+  sonar-cache:

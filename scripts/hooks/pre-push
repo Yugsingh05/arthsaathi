@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Optional: run the SonarCloud scan locally before every push.
+# Enable with:  git config core.hooksPath scripts/hooks
+# Disable with: git config --unset core.hooksPath
+set -euo pipefail
+repo_root="$(git rev-parse --show-toplevel)"
+echo "→ pre-push: running SonarCloud scan in Docker…"
+"$repo_root/scripts/sonar-scan.sh"

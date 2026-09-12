@@ -1,0 +1,61 @@
+name: SonarCloud
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Cancel an in-flight scan when you push again to the same branch.
+concurrency:
+  group: sonar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-report:
+    name: Code quality report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full history for accurate blame)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run SonarScanner in Docker
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SONAR_TOKEN:-}" ]; then
+            echo "::error::SONAR_TOKEN secret is not set. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            SCAN_ARGS="-Dsonar.pullrequest.key=${{ github.event.number }}"
+            SCAN_ARGS="$SCAN_ARGS -Dsonar.pullrequest.branch=${{ github.head_ref }}"
+            SCAN_ARGS="$SCAN_ARGS -Dsonar.pullrequest.base=${{ github.base_ref }}"
+          else
+            SCAN_ARGS="-Dsonar.branch.name=${{ github.ref_name }}"
+          fi
+
+          docker run --rm \
+            -e SONAR_HOST_URL="https://sonarcloud.io" \
+            -e SONAR_TOKEN="$SONAR_TOKEN" \
+            -v "$GITHUB_WORKSPACE:/usr/src" \
+            sonarsource/sonar-scanner-cli:latest \
+            $SCAN_ARGS \
+            -Dsonar.scm.revision=${{ github.sha }}
+            # Add -Dsonar.qualitygate.wait=true above to FAIL this job
+            # when the quality gate does not pass.
+
+      - name: Link to the report
+        if: always()
+        run: |
+          {
+            echo "### SonarCloud quality report"
+            echo ""
+            echo "https://sonarcloud.io/project/overview?id=Yugsingh05_arthsaathi"
+          } >> "$GITHUB_STEP_SUMMARY"
