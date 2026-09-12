@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json
+import argparse
 import sys
 import time
 from datetime import date
@@ -8,8 +8,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import joblib
-import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
@@ -20,17 +18,22 @@ from app.core.policy import PolicyEngine
 from app.core.propensity import PropensityBank, synth_labels
 from app.core.segments import SegmentModel
 from app.core.stress import StressModel
+from app.db import artifacts
+from app.db.documents import load_document
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT.parent / "data"
-MODELS = ROOT / "models"
 
 
-def main() -> None:
+def main(ensure: bool = False) -> None:
     t0 = time.time()
-    MODELS.mkdir(exist_ok=True)
-    fe = FeatureEngine(DATA)
-    as_of = date.fromisoformat(json.loads((DATA / "demo_checkpoints.json").read_text())["today"])
+
+    fp = artifacts.fingerprint()
+    if ensure and artifacts.load(fp) is not None:
+        print(f"→ model {fp[:12]} already in the database, nothing to train")
+        return
+
+    fe = FeatureEngine()
+    as_of = date.fromisoformat(load_document("demo_checkpoints", default={})["today"])
     X = fe.compute_all(as_of)
     print(f"features       {X.shape[0]} customers x {X.shape[1]} features")
 
@@ -59,11 +62,18 @@ def main() -> None:
     print(f"\nstress         {int(sc.stressed.sum())} of {len(sc)} customers above "
           f"{policy.rules['stress']['threshold']} threshold")
 
-    joblib.dump({"segments": seg, "propensity": bank, "stress": stress, "fraud": fraud,
-                 "trained_at": str(as_of), "auc": aucs},
-                MODELS / "arthsaathi.joblib")
-    print(f"\nsaved          models/arthsaathi.joblib   ({time.time() - t0:.1f}s total)")
+    artifacts.save(
+        {"segments": seg, "propensity": bank, "stress": stress, "fraud": fraud,
+         "trained_at": str(as_of), "auc": aucs},
+        fp=fp,
+        rows_trained_on=len(fe.txns),
+    )
+    print(f"\nsaved          model_artifacts/{fp[:12]} in postgres "
+          f"({time.time() - t0:.1f}s total)")
 
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--ensure", action="store_true",
+                    help="no-op if this code and dataset already have a model")
+    main(**vars(ap.parse_args()))

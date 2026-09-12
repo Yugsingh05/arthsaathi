@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 from app.core.policy import PolicyEngine
-
-DATA = Path(__file__).resolve().parents[3] / "data"
-CASES = Path(__file__).resolve().parents[1] / "data" / "cases.json"
+from app.db.documents import load_document, load_exposures
 
 GRADES = [(0.75, "critical"), (0.55, "high"), (0.15, "watch"), (0.0, "standard")]
 
@@ -21,9 +16,8 @@ def grade(score: float) -> str:
 class ExposureBook:
     def __init__(self, policy: PolicyEngine):
         self.policy = policy
-        path = DATA / "exposures.json"
-        self.rows = json.loads(path.read_text()) if path.exists() else []
-        self.cases = json.loads(CASES.read_text()) if CASES.exists() else {}
+        self.rows = load_exposures()
+        self.cases = load_document("cases", default={})
 
     def score_one(self, row: dict) -> dict:
         score, fired = self.policy.eval_section("corporate", row)

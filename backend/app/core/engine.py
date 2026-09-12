@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-import json
 from datetime import date
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
 
 from app.core.features import BIAS_GUARDED, FeatureEngine
 from app.core.ledger import PURPOSES, Ledger
 from app.core.policy import PolicyEngine
+from app.db import artifacts
+from app.db.documents import load_document
 from app.i18n.templates import (LANG_NAMES, PRODUCT_BENEFIT, PRODUCT_NAME, REASON_TEMPLATES,
                                 UI, inr, t)
 
@@ -63,14 +63,20 @@ CHECKPOINT_TR = {
 }
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT.parent / "data"
 
 
 class Engine:
     def __init__(self) -> None:
-        self.fe = FeatureEngine(DATA)
+        self.fe = FeatureEngine()
         self.policy = PolicyEngine(ROOT / "policies" / "rules.yaml")
-        art = joblib.load(ROOT / "models" / "arthsaathi.joblib")
+        art = artifacts.load()
+        if art is None:
+            # nothing stored for this code + data combination yet
+            raise RuntimeError(
+                "no trained model in the database for this build. Run "
+                "`python scripts/train.py` (the container entrypoint does this "
+                "for you) to train once and store it for every other replica."
+            )
         self.seg = art["segments"]
         self.bank = art["propensity"]
         self.stress = art["stress"]
@@ -80,9 +86,9 @@ class Engine:
         self.auc = art["auc"]
         from app.core.explain import Explainer
         self.explainer = Explainer(self.bank)
-        self.ledger = Ledger(DATA / "arthsaathi.duckdb")
+        self.ledger = Ledger()
         self.ledger.seed_consents(self.fe.customers)
-        self.meta = json.loads((DATA / "demo_checkpoints.json").read_text())
+        self.meta = load_document("demo_checkpoints", default={})
         self.products = self.fe.products.set_index("product_id")
         self._cache: dict[str, pd.DataFrame] = {}
         self._logged: set[tuple[str, str]] = set()

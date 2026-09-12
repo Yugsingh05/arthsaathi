@@ -3,8 +3,9 @@
 #   docker compose -f docker-compose.dev.yml up --build
 #
 # Edit a .py file and uvicorn restarts; edit a .jsx file and Vite hot-reloads.
-# ./data and ./backend/models are bind-mounted, so it reuses whatever you have
-# already generated on the host instead of regenerating inside a volume.
+# State is in Postgres, so both halves talk to the same database your host
+# tooling does. Note that a reload re-reads the whole transactions table, which
+# costs about 25s.
 #
 # Same two independent images as the built stack, just different targets and
 # mounts — the Dockerfiles still live in backend/ and frontend/.
@@ -18,9 +19,10 @@ services:
       target: runtime
       additional_contexts:
         dataset: ./data
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend:/app/backend
-      - ./data:/app/data
     # the venv lives at /opt/venv, outside /app, so the bind mount above
     # cannot shadow it
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

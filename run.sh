@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
 # One command to bring ArthSaathi up. Ctrl-C stops both halves.
+#
+# Needs a Postgres URL in backend/.env — see backend/.env.example. The three
+# setup steps are the same ones the container entrypoint runs, and each is a
+# no-op once the database is warm.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-if [ ! -f data/transactions.parquet ]; then
-  echo "→ generating synthetic Bharat (500 customers, 12 months)…"
-  (cd backend && uv run python scripts/generate_data.py)
+if [ ! -f backend/.env ]; then
+  echo "backend/.env is missing. Copy backend/.env.example and put your"
+  echo "Postgres URL in it, then run this again." >&2
+  exit 1
 fi
-if [ ! -f backend/models/arthsaathi.joblib ]; then
-  echo "→ training models…"
-  (cd backend && uv run python scripts/train.py)
-fi
+
+echo "→ applying migrations…"
+(cd backend && uv run alembic upgrade head)
+
+echo "→ checking dataset…"
+(cd backend && uv run python scripts/seed_db.py)
+
+echo "→ checking model…"
+(cd backend && uv run python scripts/train.py --ensure)
 
 echo "→ api  http://localhost:8000/docs"
 (cd backend && uv run uvicorn app.main:app --port 8000) &

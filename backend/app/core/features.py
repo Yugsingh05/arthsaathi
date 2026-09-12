@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import logging
 import re
+import time
 from datetime import date
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sqlalchemy import Engine
+
+from app.db.bulk import read_frame
+
+log = logging.getLogger(__name__)
 
 
 RAIL_PATTERNS: list[tuple[str, re.Pattern]] = [
@@ -88,17 +94,43 @@ FEATURE_COLUMNS = [
 
 
 class FeatureEngine:
+    """Holds the dataset in memory for the windowed feature maths.
 
-    def __init__(self, data_dir: str | Path):
-        self.dir = Path(data_dir)
-        self.customers = pd.read_parquet(self.dir / "customers.parquet")
-        self.txns = pd.read_parquet(self.dir / "transactions.parquet")
-        self.emis = pd.read_parquet(self.dir / "emis.parquet")
-        self.events = pd.read_parquet(self.dir / "life_events.parquet")
-        self.products = pd.read_parquet(self.dir / "products.parquet")
-        self.txns["txn_date"] = pd.to_datetime(self.txns.txn_date)
+    Every row comes from Postgres. The transactions table is the expensive one
+    — half a million rows — so it is pulled once over COPY at construction and
+    the windowing is done in pandas, exactly as before.
+    """
+
+    CUSTOMER_BOOLS = ("smartphone", "consent_personalisation",
+                      "consent_stress_watch", "consent_fraud_watch")
+
+    def __init__(self, engine: Engine | None = None):
+        from app.db.session import engine as default_engine
+
+        self.engine = engine or default_engine
+        t0 = time.time()
+
+        self.customers = read_frame(
+            self.engine,
+            "SELECT * FROM customers ORDER BY customer_id",
+            parse_dates=["account_opened"],
+            bool_columns=self.CUSTOMER_BOOLS,
+        )
+        self.txns = read_frame(
+            self.engine,
+            "SELECT * FROM transactions",
+            parse_dates=["txn_date"],
+        )
+        self.emis = read_frame(self.engine, "SELECT * FROM emis")
+        self.events = read_frame(
+            self.engine, "SELECT * FROM life_events", parse_dates=["event_date"])
+        self.products = read_frame(
+            self.engine, "SELECT * FROM products", bool_columns=["is_credit"])
+
         self.txns = parse_frame(self.txns)
         self._emi_by_cust = self.emis.groupby("customer_id").emi_amount.sum()
+        log.info("loaded %s transactions for %s customers from postgres in %.1fs",
+                 f"{len(self.txns):,}", len(self.customers), time.time() - t0)
 
     def _window(self, as_of: date, days: int, offset: int = 0) -> pd.DataFrame:
         hi = pd.Timestamp(as_of) - pd.Timedelta(days=offset)

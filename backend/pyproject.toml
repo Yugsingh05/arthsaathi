@@ -15,7 +15,11 @@ dependencies = [
     "numpy>=1.26",
     "pandas>=2.2",
     "pyarrow>=16.0",
-    "duckdb>=1.0",
+    # database: every read and write the app makes goes through Postgres
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.13",
+    "python-dotenv>=1.0",
     # models + explainability
     "scikit-learn>=1.5",
     "xgboost>=2.1",

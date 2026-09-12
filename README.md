@@ -20,10 +20,13 @@ Every offer it decided not to show gets logged.
 
 Then http://localhost:5173. API docs at http://localhost:8000/docs.
 
-First run generates the dataset and trains the models, which takes about 40 seconds.
-After that everything is cached. No GPU, no API keys, no internet needed.
+You need a Postgres URL in `backend/.env` first — copy `backend/.env.example`.
+The first run migrates the schema, loads the dataset and trains the models,
+which takes about two minutes; after that all three steps are no-ops and start
+up is about 25 seconds, spent reading the transactions table. No GPU and no API
+keys, but unlike before it does need the database to be reachable.
 
-Two terminals if you prefer:
+Two terminals if you prefer (after `./run.sh` has set the database up once):
 
 ```bash
 cd backend  && uv run uvicorn app.main:app --port 8000
@@ -49,13 +52,13 @@ Then http://localhost:5173, API docs at http://localhost:8000/docs. The root
 compose file builds nothing itself — it points at the two directories and wires
 them together.
 
-Boot is immediate, including the very first one. The dataset and the trained
-model are committed to this repo, so the API image ships them rather than
-regenerating them — `data/` is handed to the build as a named context, since it
-sits beside `backend/` and is not part of that directory's build context. The
-entrypoint still generates and trains, but only as a fallback when the
-artefacts are genuinely absent. The web container waits on the API's
-healthcheck, so the page is never served against a half-ready backend.
+The API needs `backend/.env` with a `DATABASE_URL` — see the Database section
+below. There are no volumes: the dataset, the ledger and the trained model are
+all rows in Postgres, so `docker compose down` loses nothing and two stacks
+pointed at the same database share their state. Boot migrates, confirms the
+dataset is loaded, confirms a model exists, and serves. The web container waits
+on the API's healthcheck, so the page is never served against a half-ready
+backend.
 
 **Either half on its own**
 
@@ -73,8 +76,7 @@ else without rebuilding:
 API_UPSTREAM=http://staging.internal:8000 docker compose up
 ```
 
-Both stacks share the same two named volumes (`arthsaathi-data`,
-`arthsaathi-models`), so switching between them never repeats work.
+Both read the same `DATABASE_URL`, so they share all their state.
 
 **Development, with hot reload on both halves:**
 
@@ -100,17 +102,19 @@ frontend/nginx/default.conf.*      serves dist, proxies /api, SPA fallback
 frontend/docker-compose.yml        the web app alone
 
 docker-compose.yml                 both, wired together; hands data/ to the
-                                   API build as a named context
+                                   API build and backend/.env to the container
 docker-compose.dev.yml             both, hot reload
 ```
 
 Four things worth knowing if you change this.
 
 `backend/Dockerfile` declares an empty `FROM scratch AS dataset` stage that the
-compose files override with `additional_contexts: {dataset: ./data}`. That is
-what lets the image carry the dataset while the build context stays `backend/`
-alone — and a bare `docker build .` from `backend/` still succeeds, just with an
-empty `/app/data` that the entrypoint then fills on first boot.
+compose files override with `additional_contexts: {dataset: ./data}`. The image
+carries the committed dataset only so that it can seed an *empty* database on
+first boot; the running app never reads it. The build context stays `backend/`
+alone, and a bare `docker build .` from `backend/` still succeeds — it just
+produces an image that would generate the dataset itself if it ever met an
+empty database.
 
 Inside the API image the tree is `/app/backend` and `/app/data`, because
 `core/engine.py` resolves `DATA` as `backend/../data` — the two have to stay
@@ -130,6 +134,58 @@ only be correct on a user-defined network.
 
 The API image is ~2GB; xgboost, shap, scikit-learn and pyarrow account for most
 of it. The web image is 76MB.
+
+## Database
+
+Every read and write the running app makes goes through Postgres. Nothing is
+loaded from a parquet, duckdb or joblib file at runtime, and the containers
+carry no volumes.
+
+```
+customers, transactions, emis,     the synthetic dataset, written once by the
+life_events, products, exposures   seeder and read-only after that
+documents                          demo_checkpoints and cases, as JSONB
+consents, ledger                   consent state and the decision audit trail
+model_artifacts                    the trained model itself
+```
+
+**Setup** — put a Postgres URL in `backend/.env` (`backend/.env.example` is the
+template; any Postgres works, this is developed against Neon), then:
+
+```bash
+cd backend
+uv run alembic upgrade head          # create the schema
+uv run python scripts/seed_db.py     # load the dataset (~45s, once)
+uv run python scripts/train.py       # train and store the model (~35s, once)
+```
+
+`run.sh` and the container entrypoint run exactly these three, and all three
+are no-ops against a warm database, so they are safe on every boot.
+
+**The ORM is SQLAlchemy 2.0, with Alembic for migrations.** Schema lives in
+`app/db/models.py`; change it and run
+`uv run alembic revision --autogenerate -m "what changed"`.
+
+**Bulk reads go over COPY, not the ORM.** The feature engine needs all 525,872
+transactions in pandas to do its windowed maths, and row-by-row through the ORM
+that is minutes. `app/db/bulk.py` uses `COPY ... TO STDOUT` instead, which puts
+a cold boot at roughly 25 seconds. Writes are chunked for the same reason from
+the other side: a single 71MB `COPY FROM` gets its connection dropped by Neon,
+at 45s through the pooler and 78s direct, so `WRITE_CHUNK_ROWS` keeps each
+statement short.
+
+Seeding uses the **direct** endpoint, not the pooled one. Neon's pooled host
+has `-pooler` in it and sits behind pgbouncer, which will not see a large COPY
+through; `app/core/config.py` derives the direct host by removing that, and
+`DATABASE_URL_UNPOOLED` overrides it if yours is shaped differently.
+
+**Training happens once, ever.** The model is a row in `model_artifacts`, keyed
+by a SHA-256 of the modelling code, the policy rules, and the size and as-of
+date of the dataset. Boot looks that fingerprint up: a hit is a 7MB download, a
+miss trains once and stores the result for every other container, machine and
+rebuild. Change `app/core/stress.py` or `policies/rules.yaml` and the
+fingerprint moves, so the next boot retrains once and every later one does not.
+`scripts/train.py --ensure` is the no-op-if-present form the entrypoint calls.
 
 ## Code quality
 
@@ -184,16 +240,20 @@ backend/
   app/core/stress.py      YAML rules + IsolationForest
   app/core/fraud.py       velocity rules + IsolationForest
   app/core/policy.py      eligibility, gates, caps, ranking
-  app/core/ledger.py      consent + reasoning ledger, DuckDB
+  app/core/ledger.py      consent + reasoning ledger, Postgres
+  app/db/models.py        the whole schema, SQLAlchemy 2.0
+  app/db/bulk.py          COPY-based bulk reads and writes
+  app/db/artifacts.py     the trained model, stored in Postgres
+  alembic/                migrations
   app/core/engine.py      decide() - ties it all together
   app/assistant/          loan and onboarding state machines
   policies/rules.yaml     thresholds, caps, eligibility
-  scripts/                data generation and training
+  scripts/                data generation, seeding and training
   app/core/exposures.py   large-borrower monitor, same rule engine
   app/data/cases.json     cited public-record detection-lag cases
 frontend/src/views/       overview, customer 360, recommendations, risk,
                           journeys, portfolio, large exposures, audit
-data/                     generated parquet + ledger db
+data/                     the generated dataset, used only to seed Postgres
 ```
 
 ## How it works

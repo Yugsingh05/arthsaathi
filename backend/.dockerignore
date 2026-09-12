@@ -7,10 +7,12 @@
 **/*.pyc
 **/*.pyo
 
-# models/ is deliberately NOT excluded: arthsaathi.joblib is committed, and
-# shipping it means a container never has to train on boot.
+# the trained model lives in Postgres now, so the committed joblib is dead
+# weight in the image
+models/
 
 # not needed to run the API
+.env
 .pytest_cache
 .ruff_cache
 *.md

@@ -9,9 +9,11 @@
 # own .dockerignore — this file only connects them. Either half also runs
 # alone: `cd backend && docker compose up` or `cd frontend && docker compose up`.
 #
-# The image ships the committed dataset and the trained model, so boot is
-# immediate — nothing is generated or trained unless those are genuinely
-# missing. The web container waits for the API's healthcheck, so the page is
+# State lives in Postgres, not in this stack: the dataset, the consent and
+# decision ledger and the trained model are all rows in the database named by
+# backend/.env, so there are no volumes here and nothing to lose on `down`.
+# Boot migrates, checks the dataset is loaded, checks a model exists, and
+# serves. The web container waits for the API's healthcheck, so the page is
 # never served against a half-ready backend.
 
 name: arthsaathi
@@ -27,11 +29,11 @@ services:
         # volume is seeded from it — nothing is generated on boot.
         dataset: ./data
     image: arthsaathi-api:latest
+    # DATABASE_URL and friends; see backend/.env.example
+    env_file:
+      - ./backend/.env
     ports:
       - "8000:8000"
-    volumes:
-      - arthsaathi-data:/app/data
-      - arthsaathi-models:/app/backend/models
     restart: unless-stopped
 
   web:
@@ -48,11 +50,3 @@ services:
       api:
         condition: service_healthy
     restart: unless-stopped
-
-# Fixed names, so the standalone backend stack in backend/docker-compose.yml
-# shares these instead of each compose project getting its own empty pair.
-volumes:
-  arthsaathi-data:
-    name: arthsaathi-data
-  arthsaathi-models:
-    name: arthsaathi-models

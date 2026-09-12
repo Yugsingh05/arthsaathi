@@ -2,10 +2,9 @@
 #
 #   cd backend && docker compose up --build
 #
-# Docs at http://localhost:8000/docs. The image ships the committed dataset and
-# trained model, so this boots straight up; the entrypoint only generates and
-# trains if they are actually missing. The volumes are the same two the
-# full-stack file uses, so the two never duplicate the work.
+# Docs at http://localhost:8000/docs. Everything is in Postgres, so this needs
+# no volumes and shares its state with every other stack pointed at the same
+# DATABASE_URL — including the full-stack file one directory up.
 
 name: arthsaathi-api
 
@@ -18,15 +17,9 @@ services:
         # the committed dataset, baked in so boot needs no generation
         dataset: ../data
     image: arthsaathi-api:latest
+    # DATABASE_URL and friends; see .env.example
+    env_file:
+      - ./.env
     ports:
       - "8000:8000"
-    volumes:
-      - arthsaathi-data:/app/data
-      - arthsaathi-models:/app/backend/models
     restart: unless-stopped
-
-volumes:
-  arthsaathi-data:
-    name: arthsaathi-data
-  arthsaathi-models:
-    name: arthsaathi-models
