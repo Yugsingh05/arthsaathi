@@ -60,6 +60,10 @@ export default function App() {
 
   useEffect(() => { reload(); setActed({}) }, [reload])
 
+
+
+
+  
   useEffect(() => {
     if (!asOf) return
     const u = new URL(window.location.href)
