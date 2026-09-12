@@ -34,18 +34,47 @@ See DEMO.md for the walkthrough.
 
 ## Running it in Docker
 
-Nothing installed on the host — no uv, no Node.
+Nothing installed on the host — no uv, no Node. Each half owns its own Docker
+setup: `backend/` and `frontend/` each have a Dockerfile, a `.dockerignore` and
+a compose file, and each builds from its own directory as the build context.
+Neither reaches outside itself, so either one runs, builds and deploys alone.
+
+**Both halves together**
 
 ```bash
 docker compose up --build
 ```
 
-Then http://localhost:5173, API docs at http://localhost:8000/docs.
+Then http://localhost:5173, API docs at http://localhost:8000/docs. The root
+compose file builds nothing itself — it points at the two directories and wires
+them together.
 
-First boot generates the dataset and trains the models inside the container,
-which takes 2-3 minutes. Both land in named volumes, so every boot after that
-is immediate. The web container waits on the API's healthcheck, so the page is
-never served against a half-ready backend.
+Boot is immediate, including the very first one. The dataset and the trained
+model are committed to this repo, so the API image ships them rather than
+regenerating them — `data/` is handed to the build as a named context, since it
+sits beside `backend/` and is not part of that directory's build context. The
+entrypoint still generates and trains, but only as a fallback when the
+artefacts are genuinely absent. The web container waits on the API's
+healthcheck, so the page is never served against a half-ready backend.
+
+**Either half on its own**
+
+```bash
+cd backend  && docker compose up --build      # API alone on :8000
+cd frontend && docker compose up --build      # web alone on :5173
+```
+
+The web container proxies `/api` to whatever `API_UPSTREAM` names. On its own
+that defaults to port 8000 on the host, so it works against `uv run uvicorn` on
+your machine or against `cd backend && docker compose up`; point it anywhere
+else without rebuilding:
+
+```bash
+API_UPSTREAM=http://staging.internal:8000 docker compose up
+```
+
+Both stacks share the same two named volumes (`arthsaathi-data`,
+`arthsaathi-models`), so switching between them never repeats work.
 
 **Development, with hot reload on both halves:**
 
@@ -60,18 +89,44 @@ on the host rather than regenerating them.
 **How it fits together**
 
 ```
-backend/Dockerfile    uv resolves deps into /opt/venv, runtime is python:3.12-slim
-                      entrypoint generates data + trains models if missing
-frontend/Dockerfile   target dev     -> Vite dev server
-                      target runtime -> static build behind nginx
-docker/nginx.conf     serves dist, proxies /api -> api:8000, SPA fallback
+backend/Dockerfile                 uv resolves deps into /opt/venv, runtime is
+                                   python:3.12-slim
+backend/docker-entrypoint.sh       generates data + trains models if missing
+backend/docker-compose.yml         the API alone
+
+frontend/Dockerfile                target dev     -> Vite dev server
+                                   target runtime -> static build behind nginx
+frontend/nginx/default.conf.*      serves dist, proxies /api, SPA fallback
+frontend/docker-compose.yml        the web app alone
+
+docker-compose.yml                 both, wired together; hands data/ to the
+                                   API build as a named context
+docker-compose.dev.yml             both, hot reload
 ```
 
-Two things worth knowing if you change this. The build context is the **repo
-root** for both Dockerfiles, not `backend/` or `frontend/`, because
-`core/engine.py` resolves `DATA` as `backend/../data` — the two directories have
-to stay siblings inside the image. And the Python venv lives at `/opt/venv`,
-outside `/app`, so the dev bind mount over `/app/backend` cannot shadow it.
+Four things worth knowing if you change this.
+
+`backend/Dockerfile` declares an empty `FROM scratch AS dataset` stage that the
+compose files override with `additional_contexts: {dataset: ./data}`. That is
+what lets the image carry the dataset while the build context stays `backend/`
+alone — and a bare `docker build .` from `backend/` still succeeds, just with an
+empty `/app/data` that the entrypoint then fills on first boot.
+
+Inside the API image the tree is `/app/backend` and `/app/data`, because
+`core/engine.py` resolves `DATA` as `backend/../data` — the two have to stay
+siblings in the image even though only `backend/` is the build context.
+
+The Python venv lives at `/opt/venv`, outside `/app`, so the dev bind mount over
+`/app/backend` cannot shadow it.
+
+nginx reaches the upstream through a variable rather than naming it directly in
+`proxy_pass`. A literal name is resolved once at startup and nginx aborts if it
+does not exist yet, which would stop the web container from booting whenever the
+API is down — exactly what an independent frontend must survive. Through a
+variable the name resolves per request, so the app still serves and only `/api`
+returns 502. The resolver itself comes from the container's own `resolv.conf`
+via `NGINX_ENTRYPOINT_LOCAL_RESOLVERS`; hardcoding Docker's `127.0.0.11` would
+only be correct on a user-defined network.
 
 The API image is ~2GB; xgboost, shap, scikit-learn and pyarrow account for most
 of it. The web image is 76MB.

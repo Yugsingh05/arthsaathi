@@ -15,9 +15,19 @@ server {
         add_header Cache-Control "public, immutable";
     }
 
-    # same contract as the Vite dev proxy: /api -> the API container
+    # same contract as the Vite dev proxy: /api -> the API, wherever it lives.
+    # ${API_UPSTREAM} is substituted on container start.
+    #
+    # The upstream goes through a variable on purpose. Naming a host directly
+    # in proxy_pass makes nginx resolve it once, at startup, and abort if it
+    # does not exist yet — the web container would refuse to boot whenever the
+    # API is down. Through a variable the name is resolved per request, so this
+    # half starts and serves the app on its own and only /api returns 502.
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s ipv6=off;
+
     location /api/ {
-        proxy_pass         http://api:8000;
+        set                $api_upstream ${API_UPSTREAM};
+        proxy_pass         $api_upstream$request_uri;
         proxy_http_version 1.1;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;

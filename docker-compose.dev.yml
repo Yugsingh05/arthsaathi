@@ -5,28 +5,31 @@
 # Edit a .py file and uvicorn restarts; edit a .jsx file and Vite hot-reloads.
 # ./data and ./backend/models are bind-mounted, so it reuses whatever you have
 # already generated on the host instead of regenerating inside a volume.
+#
+# Same two independent images as the built stack, just different targets and
+# mounts — the Dockerfiles still live in backend/ and frontend/.
 
 name: arthsaathi-dev
 
 services:
   api:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
       target: runtime
-    ports:
-      - "8000:8000"
+      additional_contexts:
+        dataset: ./data
     volumes:
       - ./backend:/app/backend
       - ./data:/app/data
     # the venv lives at /opt/venv, outside /app, so the bind mount above
     # cannot shadow it
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8000:8000"
 
   web:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
       target: dev
     ports:
       - "5173:5173"
@@ -34,9 +37,9 @@ services:
       # the Vite proxy has to reach the API by service name, not localhost
       VITE_API_PROXY: http://api:8000
     volumes:
-      - ./frontend:/app/frontend
+      - ./frontend:/app
       # keep the image's Linux node_modules; the host's are built for macOS
-      - dev-node-modules:/app/frontend/node_modules
+      - dev-node-modules:/app/node_modules
     depends_on:
       api:
         condition: service_healthy

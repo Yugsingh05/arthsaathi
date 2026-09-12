@@ -1,0 +1,32 @@
+# The API on its own — no frontend, no repo-root file involved.
+#
+#   cd backend && docker compose up --build
+#
+# Docs at http://localhost:8000/docs. The image ships the committed dataset and
+# trained model, so this boots straight up; the entrypoint only generates and
+# trains if they are actually missing. The volumes are the same two the
+# full-stack file uses, so the two never duplicate the work.
+
+name: arthsaathi-api
+
+services:
+  api:
+    build:
+      context: .
+      target: runtime
+      additional_contexts:
+        # the committed dataset, baked in so boot needs no generation
+        dataset: ../data
+    image: arthsaathi-api:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - arthsaathi-data:/app/data
+      - arthsaathi-models:/app/backend/models
+    restart: unless-stopped
+
+volumes:
+  arthsaathi-data:
+    name: arthsaathi-data
+  arthsaathi-models:
+    name: arthsaathi-models

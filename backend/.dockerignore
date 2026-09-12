@@ -1,0 +1,16 @@
+# Build context is this directory, so everything here is backend-only.
+
+# python
+.venv
+.python-version
+**/__pycache__
+**/*.pyc
+**/*.pyo
+
+# models/ is deliberately NOT excluded: arthsaathi.joblib is committed, and
+# shipping it means a container never has to train on boot.
+
+# not needed to run the API
+.pytest_cache
+.ruff_cache
+*.md

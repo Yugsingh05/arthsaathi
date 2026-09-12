@@ -1,0 +1,12 @@
+# Build context is this directory, so everything here is frontend-only.
+
+# installed inside the image for the right platform
+node_modules
+
+# produced by the build stage, never copied in
+dist
+
+# tooling
+.vite
+.eslintcache
+*.md

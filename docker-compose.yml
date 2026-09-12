@@ -1,22 +1,31 @@
-# ArthSaathi — built stack. One command, nothing installed on the host.
+# ArthSaathi — both halves, wired together. One command, nothing installed on
+# the host.
 #
 #   docker compose up --build
 #
 # web  http://localhost:5173   api  http://localhost:8000/docs
 #
-# First boot generates the dataset and trains the models (~2-3 min inside a
-# container); the web container waits for the API's healthcheck, so the page
-# is never served against a half-ready backend. Both artefacts live in named
-# volumes, so every boot after the first is immediate.
+# Each service builds from its own directory with its own Dockerfile and its
+# own .dockerignore — this file only connects them. Either half also runs
+# alone: `cd backend && docker compose up` or `cd frontend && docker compose up`.
+#
+# The image ships the committed dataset and the trained model, so boot is
+# immediate — nothing is generated or trained unless those are genuinely
+# missing. The web container waits for the API's healthcheck, so the page is
+# never served against a half-ready backend.
 
 name: arthsaathi
 
 services:
   api:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
       target: runtime
+      additional_contexts:
+        # data/ sits beside backend/, so it is handed in rather than being part
+        # of the context. The committed dataset ships in the image and a fresh
+        # volume is seeded from it — nothing is generated on boot.
+        dataset: ./data
     image: arthsaathi-api:latest
     ports:
       - "8000:8000"
@@ -27,17 +36,23 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
       target: runtime
     image: arthsaathi-web:latest
     ports:
       - "5173:5173"
+    environment:
+      # here the API is a sibling container, reachable by service name
+      API_UPSTREAM: http://api:8000
     depends_on:
       api:
         condition: service_healthy
     restart: unless-stopped
 
+# Fixed names, so the standalone backend stack in backend/docker-compose.yml
+# shares these instead of each compose project getting its own empty pair.
 volumes:
   arthsaathi-data:
+    name: arthsaathi-data
   arthsaathi-models:
+    name: arthsaathi-models
