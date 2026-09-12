@@ -1,0 +1,43 @@
+# ArthSaathi — built stack. One command, nothing installed on the host.
+#
+#   docker compose up --build
+#
+# web  http://localhost:5173   api  http://localhost:8000/docs
+#
+# First boot generates the dataset and trains the models (~2-3 min inside a
+# container); the web container waits for the API's healthcheck, so the page
+# is never served against a half-ready backend. Both artefacts live in named
+# volumes, so every boot after the first is immediate.
+
+name: arthsaathi
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: runtime
+    image: arthsaathi-api:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - arthsaathi-data:/app/data
+      - arthsaathi-models:/app/backend/models
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: runtime
+    image: arthsaathi-web:latest
+    ports:
+      - "5173:5173"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  arthsaathi-data:
+  arthsaathi-models:

@@ -1,0 +1,25 @@
+# vcs + tooling
+.git
+.github
+.gitignore
+.env
+.scannerwork
+sonar-project.properties
+docker-compose*.yml
+
+# python
+**/.venv
+**/__pycache__
+**/*.pyc
+backend/.python-version
+
+# node
+**/node_modules
+frontend/dist
+
+# generated at runtime, never baked into the image
+data/
+backend/models/
+
+# docs
+*.md

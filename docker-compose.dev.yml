@@ -1,0 +1,45 @@
+# ArthSaathi — development stack. Source is bind-mounted, both halves reload.
+#
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Edit a .py file and uvicorn restarts; edit a .jsx file and Vite hot-reloads.
+# ./data and ./backend/models are bind-mounted, so it reuses whatever you have
+# already generated on the host instead of regenerating inside a volume.
+
+name: arthsaathi-dev
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: runtime
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./data:/app/data
+    # the venv lives at /opt/venv, outside /app, so the bind mount above
+    # cannot shadow it
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: dev
+    ports:
+      - "5173:5173"
+    environment:
+      # the Vite proxy has to reach the API by service name, not localhost
+      VITE_API_PROXY: http://api:8000
+    volumes:
+      - ./frontend:/app/frontend
+      # keep the image's Linux node_modules; the host's are built for macOS
+      - dev-node-modules:/app/frontend/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  dev-node-modules:

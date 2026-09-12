@@ -32,6 +32,50 @@ cd frontend && npm run dev
 
 See DEMO.md for the walkthrough.
 
+## Running it in Docker
+
+Nothing installed on the host — no uv, no Node.
+
+```bash
+docker compose up --build
+```
+
+Then http://localhost:5173, API docs at http://localhost:8000/docs.
+
+First boot generates the dataset and trains the models inside the container,
+which takes 2-3 minutes. Both land in named volumes, so every boot after that
+is immediate. The web container waits on the API's healthcheck, so the page is
+never served against a half-ready backend.
+
+**Development, with hot reload on both halves:**
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+Source is bind-mounted — edit a `.py` and uvicorn restarts, edit a `.jsx` and
+Vite hot-reloads. It reuses the `data/` and `backend/models/` you already have
+on the host rather than regenerating them.
+
+**How it fits together**
+
+```
+backend/Dockerfile    uv resolves deps into /opt/venv, runtime is python:3.12-slim
+                      entrypoint generates data + trains models if missing
+frontend/Dockerfile   target dev     -> Vite dev server
+                      target runtime -> static build behind nginx
+docker/nginx.conf     serves dist, proxies /api -> api:8000, SPA fallback
+```
+
+Two things worth knowing if you change this. The build context is the **repo
+root** for both Dockerfiles, not `backend/` or `frontend/`, because
+`core/engine.py` resolves `DATA` as `backend/../data` — the two directories have
+to stay siblings inside the image. And the Python venv lives at `/opt/venv`,
+outside `/app`, so the dev bind mount over `/app/backend` cannot shadow it.
+
+The API image is ~2GB; xgboost, shap, scikit-learn and pyarrow account for most
+of it. The web image is 76MB.
+
 ## Code quality
 
 SonarCloud analyses every push. The scanner always runs inside the
