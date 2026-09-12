@@ -54,6 +54,16 @@ export const STRINGS = {
   "hi": "कृत्रिम डेटा",
   "gu": "કૃત્રિમ ડેટા"
  },
+ "search_customer": {
+  "en": "Search customer by name or ID",
+  "hi": "नाम या आईडी से ग्राहक खोजें",
+  "gu": "નામ અથવા ID થી ગ્રાહક શોધો"
+ },
+ "no_customers": {
+  "en": "No matching customers",
+  "hi": "कोई ग्राहक नहीं मिला",
+  "gu": "કોઈ ગ્રાહક મળ્યો નથી"
+ },
  "as_of": {
   "en": "as of",
   "hi": "तारीख़",

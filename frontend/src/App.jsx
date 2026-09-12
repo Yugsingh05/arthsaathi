@@ -8,6 +8,7 @@ import Portfolio from './views/Portfolio'
 import Exposures from './views/Exposures'
 import AuditTrail from './views/AuditTrail'
 import { cx } from './components/ui'
+import CustomerSearch from './components/CustomerSearch'
 import { makeT } from './i18n'
 import { api } from './api'
 
@@ -71,11 +72,12 @@ export default function App() {
     window.history.replaceState(null, '', u)
   }, [cid, asOf, lang, tab])
 
-  const pickCustomer = (id) => {
+  const pickCustomer = (id, customer) => {
     setCid(id)
     if (langPinned) return
-    const c = meta?.demo_customers.find((x) => x.customer_id === id)
-    if (c) setLang(c.language)
+    const langCode = customer?.language
+      || meta?.demo_customers.find((x) => x.customer_id === id)?.language
+    if (langCode) setLang(langCode)
   }
 
   const pickLang = (code) => {
@@ -140,15 +142,7 @@ export default function App() {
             </div>
 
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <select id="customer-select" value={cid} onChange={(e) => pickCustomer(e.target.value)}
-                title={langPinned ? 'Language stays as you set it' : 'Language follows the customer'}
-                className="rounded-lg border border-[#dfe3ec] bg-white px-2.5 py-1.5 text-[12.5px] font-medium outline-none">
-                {meta.demo_customers.map((c) => (
-                  <option key={c.customer_id} value={c.customer_id}>
-                    {c.name} — {c.persona_label}
-                  </option>
-                ))}
-              </select>
+              <CustomerSearch t={t} onPick={pickCustomer} />
               <span title="All customers and figures in this prototype are generated. No real customer data is used."
                 className="hidden rounded-md bg-[#f1f3f8] px-2 py-1 text-[11px] font-semibold text-[#77809a] sm:inline">
                 {t('synthetic')}

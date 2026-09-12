@@ -46,8 +46,13 @@ def meta(lang: str = "en") -> dict:
 def customers(q: str = "", limit: int = 60) -> list[dict]:
     e = get_engine()
     df = e.fe.customers
-    if q:
-        df = df[df.name.str.contains(q, case=False) | df.customer_id.str.contains(q, case=False)]
+    needle = q.strip()
+    if needle:
+        cols_q = ["name", "customer_id", "city", "occupation", "persona_label"]
+        mask = False
+        for col in cols_q:
+            mask = mask | df[col].astype(str).str.contains(needle, case=False, regex=False, na=False)
+        df = df[mask]
     cols = ["customer_id", "name", "persona_label", "city", "language", "occupation", "age"]
     return df[cols].head(limit).to_dict("records")
 
