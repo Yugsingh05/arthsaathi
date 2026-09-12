@@ -68,14 +68,11 @@ LOAN_FLOW: list[Step] = [
               "gu": "તમારી અરજી બેંક અધિકારી પાસે છે. એક કામકાજના દિવસમાં તમારી ભાષામાં ફોન આવશે."}),
 ]
 
+# The journey runs in whichever language the header is set to, so it does not
+# ask for one: the customer has already answered that question by the time they
+# are here, and asking twice is the kind of duplication that makes a KYC script
+# feel like a form.
 ONBOARD_FLOW: list[Step] = [
-    Step("language", slot="language", kind="choice",
-         ask={"en": "Which language would you like to bank in?",
-              "hi": "आप किस भाषा में बैंकिंग करना चाहेंगे?",
-              "gu": "તમે કઈ ભાષામાં બેંકિંગ કરવા માંગો છો?"},
-         choices=[{"id": "hi", "en": "Hindi", "hi": "हिंदी", "gu": "હિન્દી"},
-                  {"id": "gu", "en": "Gujarati", "hi": "गुजराती", "gu": "ગુજરાતી"},
-                  {"id": "en", "en": "English", "hi": "अंग्रेज़ी", "gu": "અંગ્રેજી"}]),
     Step("mobile", slot="mobile", validate=r"^[6-9]\d{9}$",
          ask={"en": "What is your mobile number?", "hi": "आपका मोबाइल नंबर क्या है?",
               "gu": "તમારો મોબાઇલ નંબર શું છે?"},

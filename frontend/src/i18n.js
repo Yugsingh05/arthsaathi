@@ -599,15 +599,50 @@ export const STRINGS = {
   "hi": "प्रक्रिया रोकी गई",
   "gu": "પ્રક્રિયા અટકાવાઈ"
  },
- "captured": {
-  "en": "Captured",
-  "hi": "दर्ज जानकारी",
-  "gu": "નોંધાયેલ માહિતી"
- },
  "type_reply": {
   "en": "Type a reply…",
   "hi": "जवाब लिखें…",
   "gu": "જવાબ લખો…"
+ },
+ "journey_closed": {
+  "en": "This journey is finished",
+  "hi": "यह प्रक्रिया पूरी हो चुकी है",
+  "gu": "આ પ્રક્રિયા પૂરી થઈ ગઈ છે"
+ },
+ "journey_complete": {
+  "en": "Journey complete",
+  "hi": "प्रक्रिया पूरी",
+  "gu": "પ્રક્રિયા પૂર્ણ"
+ },
+ "journey_halted_pill": {
+  "en": "Stopped by affordability check",
+  "hi": "सामर्थ्य जाँच ने रोका",
+  "gu": "પરવડે તે તપાસે અટકાવ્યું"
+ },
+ "journey_unavailable": {
+  "en": "The assistant is unreachable. Please try again.",
+  "hi": "सहायक उपलब्ध नहीं है। कृपया दोबारा कोशिश करें।",
+  "gu": "સહાયક ઉપલબ્ધ નથી. કૃપા કરી ફરી પ્રયાસ કરો."
+ },
+ "start_again": {
+  "en": "Start again",
+  "hi": "फिर से शुरू करें",
+  "gu": "ફરી શરૂ કરો"
+ },
+ "voice_input": {
+  "en": "Voice input",
+  "hi": "आवाज़ से बोलें",
+  "gu": "અવાજથી બોલો"
+ },
+ "yes": {
+  "en": "Yes",
+  "hi": "हाँ",
+  "gu": "હા"
+ },
+ "no": {
+  "en": "No",
+  "hi": "नहीं",
+  "gu": "ના"
  },
  "send": {
   "en": "Send",

@@ -44,8 +44,20 @@ class Assistant:
         if not s:
             return {"error": "session not found"}
         steps: list[Step] = FLOWS[s["flow"]]
+        if s["idx"] >= len(steps):
+            # the journey is over; anything further is a no-op rather than an
+            # IndexError, because the caller may still have an open input box
+            return self._finish(s)
         step = steps[s["idx"]]
         s["transcript"].append({"who": "customer", "text": text})
+
+        # The step waiting on this reply can be a computed one — after the Key
+        # Facts Statement, the reply is the customer accepting it. There is no
+        # slot to fill, so hand straight to _emit and let it run the step; the
+        # old code incremented past it, which is how the closing message was
+        # being skipped.
+        if step.kind == "computed":
+            return self._emit(s)
 
         if step.kind == "consent":
             if NO.match(text.strip()):
@@ -75,16 +87,20 @@ class Assistant:
         steps: list[Step] = FLOWS[s["flow"]]
         lang = s["lang"]
 
+        # A computed step either returns a payload of its own or just falls
+        # through. The last step of every flow is the closing message, which
+        # falls through — so remember its text rather than losing it.
+        closing = ""
         while s["idx"] < len(steps) and steps[s["idx"]].kind == "computed" and not error:
             step = steps[s["idx"]]
             out = self._computed(s, step)
             if out is not None:
                 return out
+            closing = step.ask.get(lang) or step.ask["en"]
             s["idx"] += 1
 
         if s["idx"] >= len(steps):
-            return dict(session_id=s["session_id"], done=True, slots=s["slots"],
-                        message="", transcript=s["transcript"])
+            return self._finish(s, closing)
 
         step = steps[s["idx"]]
         msg = (step.error.get(lang) or step.error.get("en") or step.ask.get(lang)) if error \
@@ -95,6 +111,15 @@ class Assistant:
                     mandatory=step.mandatory_note.get(lang) or step.mandatory_note.get("en"),
                     note=note, slots=s["slots"], done=False, error=error,
                     script_locked=True, transcript=s["transcript"])
+
+    def _finish(self, s: dict, closing: str = "") -> dict:
+        """The terminal payload, carrying the flow's closing message."""
+        if closing and not (s["transcript"] and s["transcript"][-1].get("text") == closing):
+            s["transcript"].append({"who": "assistant", "text": closing})
+        return dict(session_id=s["session_id"], step="done", kind="done",
+                    message=closing, choices=[], mandatory=None, note=None,
+                    done=True, error=False, slots=s["slots"],
+                    transcript=s["transcript"])
 
     def _computed(self, s: dict, step: Step) -> dict | None:
         lang, cid = s["lang"], s["customer_id"]
