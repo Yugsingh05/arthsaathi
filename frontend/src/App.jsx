@@ -55,8 +55,8 @@ export default function App() {
   const reload = useCallback(() => {
     if (!asOf) return
     api.customer(cid, asOf, lang).then(setView).catch((e) => setErr(String(e)))
-    api.transactions(cid, asOf).then(setTxns).catch(() => {})
-    api.timeline(cid, asOf).then(setTimeline).catch(() => {})
+    api.transactions(cid, asOf, lang).then(setTxns).catch(() => {})
+    api.timeline(cid, asOf, lang).then(setTimeline).catch(() => {})
   }, [cid, asOf, lang])
 
   useEffect(() => { reload(); setActed({}) }, [reload])
@@ -140,7 +140,7 @@ export default function App() {
             </div>
 
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <CustomerSearch t={t} onPick={pickCustomer} />
+              <CustomerSearch lang={lang} t={t} onPick={pickCustomer} />
               <span title="All customers and figures in this prototype are generated. No real customer data is used."
                 className="hidden rounded-md bg-[#f1f3f8] px-2 py-1 text-[11px] font-semibold text-[#77809a] sm:inline">
                 {t('synthetic')}
@@ -165,7 +165,7 @@ export default function App() {
           {tab === 'recommendations' && <Recommendations view={view} onAct={act} acted={acted} t={t} />}
           {tab === 'risk' && <RiskMonitoring view={view} onAct={act} acted={acted} t={t} />}
           {tab === 'journeys' && <Journeys customerId={cid} lang={lang} asOf={asOf} t={t} />}
-          {tab === 'portfolio' && <Portfolio asOf={asOf} cid={cid} t={t}
+          {tab === 'portfolio' && <Portfolio asOf={asOf} cid={cid} lang={lang} t={t}
             onOpenCustomer={(id) => { pickCustomer(id); setTab('overview') }} />}
           {tab === 'exposures' && <Exposures />}
           {tab === 'audit' && <AuditTrail customerId={cid} view={view} onConsentChange={reload} t={t} />}

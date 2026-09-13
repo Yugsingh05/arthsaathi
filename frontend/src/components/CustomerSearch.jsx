@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { cx } from './ui'
 
-export default function CustomerSearch({ onPick, t }) {
+export default function CustomerSearch({ lang, onPick, t }) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [hits, setHits] = useState([])
@@ -21,14 +21,14 @@ export default function CustomerSearch({ onPick, t }) {
     if (!open) return
     let cancelled = false
     const id = setTimeout(() => {
-      api.customers(q).then((rows) => {
+      api.customers(q, lang).then((rows) => {
         if (cancelled) return
         setHits(rows)
         setHi(0)
       }).catch(() => {})
     }, 160)
     return () => { cancelled = true; clearTimeout(id) }
-  }, [q, open])
+  }, [q, open, lang])
 
   const pick = (c) => {
     onPick(c.customer_id, c)

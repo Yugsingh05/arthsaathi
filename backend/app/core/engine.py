@@ -13,6 +13,7 @@ from app.db import artifacts
 from app.db.documents import load_document
 from app.i18n.templates import (LANG_NAMES, PRODUCT_BENEFIT, PRODUCT_NAME, REASON_TEMPLATES,
                                 UI, inr, t)
+from app.i18n.localize import localized_profile, localized_purposes
 
 CONTRADICTORY: dict[str, set[str]] = {
     "INFLOW_DROP": {"salary_regularity+", "monthly_income+", "income_volatility+"},
@@ -99,9 +100,9 @@ class Engine:
             self._cache[key] = self.fe.compute_all(as_of)
         return self._cache[key]
 
-    def customer(self, cid: str) -> dict:
+    def customer(self, cid: str, lang: str = "en") -> dict:
         row = self.fe.customers.set_index("customer_id").loc[cid]
-        return {"customer_id": cid, **row.to_dict()}
+        return localized_profile({"customer_id": cid, **row.to_dict()}, lang)
 
     def _phrase_ctx(self, cid: str, f: pd.Series, as_of: date) -> dict:
         t_ = self.fe.txns
@@ -123,8 +124,9 @@ class Engine:
             return tmpl["en"]
 
     def decide(self, cid: str, as_of: date, lang: str | None = None) -> dict:
-        cust = self.customer(cid)
-        lang = lang or cust["language"]
+        raw_customer = self.customer(cid)
+        lang = lang or raw_customer["language"]
+        cust = localized_profile(raw_customer, lang)
         consents = self.ledger.consents(cid)
         F = self.features_for(as_of)
         f = F.loc[cid]
@@ -149,7 +151,7 @@ class Engine:
                       "occupation": OCCUPATION_TR.get(lang, {}).get(
                           cust["occupation"], cust["occupation"])},
             language=lang, language_name=LANG_NAMES.get(lang, lang), as_of=str(as_of),
-            segment=segment, consents=consents, purposes=PURPOSES,
+            segment=segment, consents=consents, purposes=localized_purposes(PURPOSES, lang),
             features=self._public_features(f, lang), stress=stress, fraud=fraud,
             ui={k: t(UI, k, lang) for k in UI},
         )
@@ -278,18 +280,19 @@ class Engine:
                               score=fraud["score"], reason_codes=[r["code"] for r in fraud["fired"]],
                               detail="Protective hold placed; confirmation call queued.")
 
-    def staff_queue(self, as_of: date, limit: int = 40) -> list[dict]:
+    def staff_queue(self, as_of: date, limit: int = 40, lang: str = "en") -> list[dict]:
         F = self.features_for(as_of)
         sc = self.stress.score_all(F)
         cust = self.fe.customers.set_index("customer_id")
         fr = pd.Series(self.fraud.anomaly(F), index=F.index)
         rows = []
         for cid, r in sc.sort_values("stress_score", ascending=False).head(limit).iterrows():
-            c = cust.loc[cid]
+            c = localized_profile(cust.loc[cid].to_dict(), lang)
             f = F.loc[cid]
             rows.append(dict(
-                customer_id=cid, name=c["name"], city=c.city, language=c.language,
-                occupation=c.occupation, stress_score=float(r.stress_score),
+                customer_id=cid, name=c["name"], city=c["city"], language=c["language"],
+                occupation=OCCUPATION_TR.get(lang, {}).get(c["occupation"], c["occupation"]),
+                stress_score=float(r.stress_score),
                 stressed=bool(r.stressed), codes=[x for x in str(r.codes).split(",") if x],
                 fraud_score=round(float(self.fraud.score(f.to_dict())["score"]), 3),
                 monthly_income=inr(f.monthly_income),

@@ -26,6 +26,7 @@ dependencies = [
     "shap>=0.46",
     # policy rules
     "pyyaml>=6.0",
+    "indic-transliteration>=2.3.82",
 ]
 
 [tool.uv]

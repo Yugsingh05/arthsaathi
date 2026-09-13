@@ -88,7 +88,7 @@ export default function Overview({ view, timeline, t, onGo }) {
               {view.recommendations.slice(0, 2).map((r) => (
                 <div key={r.product_id} className="rounded-lg bg-[#f8f9fc] px-4 py-3">
                   <div className="mb-1.5 flex items-center justify-between gap-3">
-                    <span className="text-[13.5px] font-semibold text-[#14306b]">{r.name_en}</span>
+                    <span className="text-[13.5px] font-semibold text-[#14306b]">{r.name}</span>
                     <span className="tnum text-[12px] text-[#8a93a8]">
                       benefit {pct(r.benefit)} · propensity {pct(r.propensity)}
                     </span>

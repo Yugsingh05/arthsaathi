@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react'
 import { Panel, Pill, Stat, cx, pct } from '../components/ui'
 import { api } from '../api'
 
-export default function Portfolio({ asOf, cid, t, onOpenCustomer }) {
+export default function Portfolio({ asOf, cid, lang, t, onOpenCustomer }) {
   const [queue, setQueue] = useState([])
   const [fair, setFair] = useState(null)
   const [note, setNote] = useState('')
   const [saved, setSaved] = useState(null)
 
   useEffect(() => {
-    api.queue(asOf).then(setQueue)
+    api.queue(asOf, lang).then(setQueue)
     api.fairness(asOf).then(setFair)
-  }, [asOf])
+  }, [asOf, lang])
 
   const decide = async (d) => {
     await api.override(cid, d, note)

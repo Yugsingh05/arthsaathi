@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException
 from app.assistant.engine import Assistant
 from app.core.engine import get_engine
 from app.core.exposures import ExposureBook
+from app.i18n.localize import localized_category
 from app.i18n.templates import LANG_NAMES
 from app.schemas import (AssistantReply, AssistantStart, ConsentUpdate, InterventionRequest,
                          OverrideRequest)
@@ -28,7 +29,7 @@ def meta(lang: str = "en") -> dict:
         tr = CHECKPOINT_TR.get(lang, {}).get(c["label"])
         checkpoints.append({**c, "label": tr[0] if tr else c["label"],
                             "sub": tr[1] if tr else c["sub"]})
-    demo = [e.customer(c) for c in e.meta["demo_customers"]]
+    demo = [e.customer(c, lang) for c in e.meta["demo_customers"]]
     return dict(
         checkpoints=checkpoints, today=e.meta["today"],
         languages=[{"code": k, "name": v} for k, v in LANG_NAMES.items()],
@@ -43,7 +44,7 @@ def meta(lang: str = "en") -> dict:
 
 
 @router.get("/customers")
-def customers(q: str = "", limit: int = 60) -> list[dict]:
+def customers(q: str = "", limit: int = 60, lang: str = "en") -> list[dict]:
     e = get_engine()
     df = e.fe.customers
     needle = q.strip()
@@ -54,7 +55,7 @@ def customers(q: str = "", limit: int = 60) -> list[dict]:
             mask = mask | df[col].astype(str).str.contains(needle, case=False, regex=False, na=False)
         df = df[mask]
     cols = ["customer_id", "name", "persona_label", "city", "language", "occupation", "age"]
-    return df[cols].head(limit).to_dict("records")
+    return [e.customer(row["customer_id"], lang) for row in df[cols].head(limit).to_dict("records")]
 
 
 @router.get("/customer/{cid}")
@@ -66,7 +67,7 @@ def customer(cid: str, as_of: str | None = None, lang: str | None = None) -> dic
 
 
 @router.get("/customer/{cid}/transactions")
-def transactions(cid: str, as_of: str | None = None, limit: int = 40) -> list[dict]:
+def transactions(cid: str, as_of: str | None = None, limit: int = 40, lang: str = "en") -> list[dict]:
     e = get_engine()
     import pandas as pd
     t = e.fe.txns
@@ -75,11 +76,14 @@ def transactions(cid: str, as_of: str | None = None, limit: int = 40) -> list[di
     out = t[["txn_id", "txn_date", "hour", "amount", "direction", "parsed_rail",
              "parsed_category", "counterparty", "narration", "balance_after"]].copy()
     out["txn_date"] = out.txn_date.dt.strftime("%d %b %Y")
-    return out.where(out.notna(), None).to_dict("records")
+    records = out.where(out.notna(), None).to_dict("records")
+    for row in records:
+        row["parsed_category"] = localized_category(row["parsed_category"], lang)
+    return records
 
 
 @router.get("/customer/{cid}/timeline")
-def timeline(cid: str, as_of: str | None = None) -> dict:
+def timeline(cid: str, as_of: str | None = None, lang: str = "en") -> dict:
     e = get_engine()
     import pandas as pd
     hi = pd.Timestamp(_as_of(as_of))
@@ -97,7 +101,7 @@ def timeline(cid: str, as_of: str | None = None) -> dict:
                  net=round(float(inflow.get(m, 0.0) - outflow.get(m, 0.0)), 2))
             for m in months if m != partial]
     return dict(months=rows,
-                categories=[dict(category=k.replace("_", " "), amount=round(float(v), 2))
+                categories=[dict(category=localized_category(k, lang), amount=round(float(v), 2))
                             for k, v in t[t.direction.eq("debit")]
                             .groupby("parsed_category").amount.sum()
                             .sort_values(ascending=False).head(7).items()])
@@ -177,8 +181,8 @@ def exposure_detail(exposure_id: str) -> dict:
 
 
 @router.get("/staff/queue")
-def staff_queue(as_of: str | None = None, limit: int = 40) -> list[dict]:
-    return get_engine().staff_queue(_as_of(as_of), limit)
+def staff_queue(as_of: str | None = None, limit: int = 40, lang: str = "en") -> list[dict]:
+    return get_engine().staff_queue(_as_of(as_of), limit, lang)
 
 
 @router.get("/staff/fairness")

@@ -27,7 +27,7 @@ export default function Recommendations({ view, onAct, acted, t }) {
                 <div className="flex flex-wrap items-start justify-between gap-4 px-4 py-3.5">
                   <div className="min-w-[240px] flex-1">
                     <div className="mb-1.5 flex items-center gap-2">
-                      <span className="text-[14px] font-semibold text-[#14306b]">{r.name_en}</span>
+                      <span className="text-[14px] font-semibold text-[#14306b]">{r.name}</span>
                       {r.is_credit && <Pill tone="amber">credit</Pill>}
                     </div>
                     <p className="text-[13px] leading-relaxed text-[#4a5468]">{r.reason_line_en}</p>
@@ -111,7 +111,7 @@ export default function Recommendations({ view, onAct, acted, t }) {
                 const label = key ? t(key) : h.suppressed_by
                 return (
                   <tr key={h.product_id}>
-                    <td className="whitespace-nowrap px-5 py-2.5 font-medium text-[#4a5468]">{h.name_en}</td>
+                    <td className="whitespace-nowrap px-5 py-2.5 font-medium text-[#4a5468]">{h.name}</td>
                     <td className="px-3 py-2.5"><Pill tone={tone}>{label}</Pill></td>
                     <td className="max-w-[420px] px-3 py-2.5 text-[#77809a]">{h.reason_held}</td>
                     <td className="tnum px-3 py-2.5 text-right text-[#1b2333]">{pct(h.propensity)}</td>
