@@ -44,11 +44,6 @@ export const STRINGS = {
   "hi": "बैंकिंग इंटेलिजेंस लेयर",
   "gu": "બેંકિંગ ઇન્ટેલિજન્સ લેયર"
  },
- "account_state": {
-  "en": "Account state",
-  "hi": "खाते की स्थिति",
-  "gu": "ખાતાની સ્થિતિ"
- },
  "synthetic": {
   "en": "Synthetic data",
   "hi": "कृत्रिम डेटा",

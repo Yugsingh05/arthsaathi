@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Panel, Pill, Stat, cx } from '../components/ui'
+import { Panel, Pill, Stat, cx, pct } from '../components/ui'
 import { api } from '../api'
 
 export default function Portfolio({ asOf, cid, t, onOpenCustomer }) {
@@ -53,7 +53,7 @@ export default function Portfolio({ asOf, cid, t, onOpenCustomer }) {
                   <td className="tnum whitespace-nowrap px-3 py-2.5 text-right text-[#4a5468]">{q.monthly_income}</td>
                   <td className={cx('tnum px-3 py-2.5 text-right font-semibold',
                     q.stress_score > 0.75 ? 'text-red-600' : q.stressed ? 'text-amber-600' : 'text-[#8a93a8]')}>
-                    {q.stress_score.toFixed(2)}
+                    {pct(q.stress_score)}
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="flex flex-wrap gap-1">
@@ -109,8 +109,8 @@ export default function Portfolio({ asOf, cid, t, onOpenCustomer }) {
                         <tr key={r.group} className="border-t border-[#f4f5f9]">
                           <td className="py-1 text-[#4a5468]">{r.group}</td>
                           <td className="tnum py-1 text-right text-[#8a93a8]">{r.n}</td>
-                          <td className="tnum py-1 text-right text-[#1b2333]">{r.stress_rate.toFixed(2)}</td>
-                          <td className="tnum py-1 text-right text-[#1b2333]">{r.benefit_offer_rate.toFixed(2)}</td>
+                          <td className="tnum py-1 text-right text-[#1b2333]">{pct(r.stress_rate)}</td>
+                          <td className="tnum py-1 text-right text-[#1b2333]">{pct(r.benefit_offer_rate)}</td>
                         </tr>
                       ))}
                     </tbody>

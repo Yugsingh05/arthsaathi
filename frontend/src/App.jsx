@@ -104,8 +104,6 @@ export default function App() {
     <div className="grid h-full place-items-center text-[13px] text-[#8a93a8]">Loading…</div>
   )
 
-  const current = meta.checkpoints.find((c) => c.date === asOf)
-
   return (
     <div className="flex min-h-full">
       <aside className="hidden w-[228px] shrink-0 flex-col bg-[#0c1730] lg:flex">
@@ -159,25 +157,6 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-[#f0f2f7] px-5 py-2 lg:px-7">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#9aa2b5]">
-              {t('account_state')}
-            </span>
-            <div className="flex gap-1 rounded-lg bg-[#f1f3f8] p-0.5">
-              {meta.checkpoints.map((c) => (
-                <button key={c.key} onClick={() => setAsOf(c.date)}
-                  className={cx('rounded-md px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
-                    asOf === c.date ? 'bg-white text-[#14306b] shadow-sm' : 'text-[#77809a] hover:text-[#4a5468]')}>
-                  {c.label}
-                </button>
-              ))}
-            </div>
-            {current && (
-              <span className="text-[12px] text-[#9aa2b5]">
-                <span className="font-medium text-[#77809a]">{current.month}</span> · {current.sub}
-              </span>
-            )}
-          </div>
         </header>
 
         <main className="flex-1 px-5 py-5 lg:px-7 lg:py-6">

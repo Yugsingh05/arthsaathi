@@ -1,4 +1,4 @@
-import { Bar, Panel, Pill, cx, inr } from '../components/ui'
+import { Bar, Panel, Pill, cx, inr, pct } from '../components/ui'
 
 const ACTIONS = [
   ['emi_holiday', 'act_defer', 'act_defer_sub'],
@@ -14,12 +14,12 @@ export default function RiskMonitoring({ view, onAct, acted, t }) {
     <div className="space-y-5">
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel title={t('kpi_stress')}
-          subtitle={t('risk_stress_sub', { t: view.stress.threshold })}>
+          subtitle={t('risk_stress_sub', { t: pct(view.stress.threshold) })}>
           <Bar value={view.stress.score} label={t('composite')}
             tone={stressed ? 'red' : view.stress.score > 0.3 ? 'amber' : 'green'} />
           <div className="mt-3 flex gap-6 text-[12px] text-[#77809a]">
-            <span>{t('rules_word')} <b className="tnum text-[#1b2333]">{view.stress.rule_score.toFixed(2)}</b></span>
-            <span>{t('anomaly_word')} <b className="tnum text-[#1b2333]">{view.stress.anomaly.toFixed(2)}</b></span>
+            <span>{t('rules_word')} <b className="tnum text-[#1b2333]">{pct(view.stress.rule_score)}</b></span>
+            <span>{t('anomaly_word')} <b className="tnum text-[#1b2333]">{pct(view.stress.anomaly)}</b></span>
           </div>
           <div className="mt-4 space-y-2 border-t border-[#f0f2f7] pt-4">
             {view.stress.fired.length === 0 ? (
@@ -34,7 +34,7 @@ export default function RiskMonitoring({ view, onAct, acted, t }) {
         </Panel>
 
         <Panel title={t('fraud_anomaly')}
-          subtitle={t('risk_fraud_sub', { t: view.fraud.threshold })}>
+          subtitle={t('risk_fraud_sub', { t: pct(view.fraud.threshold) })}>
           <Bar value={view.fraud.score} label={t('composite')} tone={fraud ? 'red' : 'green'} />
           <div className="mt-4 space-y-2 border-t border-[#f0f2f7] pt-4">
             {view.fraud.fired.length === 0 ? (

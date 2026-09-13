@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Panel, Pill, cx, inr } from '../components/ui'
+import { Panel, Pill, cx, inr, pct } from '../components/ui'
 import { api } from '../api'
 
 const STEPS = {
@@ -228,7 +228,7 @@ export default function Journeys({ customerId, lang, asOf, t }) {
         {state?.halted && (
           <Panel title={t('journey_stopped')}>
             <p className="text-[13px] leading-relaxed text-[#4a5468]">
-              The affordability check read a live stress score of <b className="tnum">{state.stress?.score}</b> and
+              The affordability check read a live stress score of <b className="tnum">{pct(state.stress?.score)}</b> and
               refused to continue the application.
             </p>
             <div className="mt-2.5 flex flex-wrap gap-1.5">

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Panel, Pill, cx } from '../components/ui'
+import { Panel, Pill, cx, pct } from '../components/ui'
 
 const HELD_TONE = {
   STRESS_PAUSE: ['red', 'stopped_stress'],
@@ -40,9 +40,9 @@ export default function Recommendations({ view, onAct, acted, t }) {
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-2">
                     <div className="tnum text-right text-[12px] text-[#77809a]">
-                      <div>benefit <b className="text-[#1b2333]">{r.benefit.toFixed(2)}</b></div>
-                      <div>propensity <b className="text-[#1b2333]">{r.propensity.toFixed(2)}</b></div>
-                      <div>score <b className="text-[#1b2333]">{r.score.toFixed(2)}</b></div>
+                      <div>benefit <b className="text-[#1b2333]">{pct(r.benefit)}</b></div>
+                      <div>propensity <b className="text-[#1b2333]">{pct(r.propensity)}</b></div>
+                      <div>score <b className="text-[#1b2333]">{pct(r.score)}</b></div>
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => setOpen(open === r.product_id ? null : r.product_id)}
@@ -114,8 +114,8 @@ export default function Recommendations({ view, onAct, acted, t }) {
                     <td className="whitespace-nowrap px-5 py-2.5 font-medium text-[#4a5468]">{h.name_en}</td>
                     <td className="px-3 py-2.5"><Pill tone={tone}>{label}</Pill></td>
                     <td className="max-w-[420px] px-3 py-2.5 text-[#77809a]">{h.reason_held}</td>
-                    <td className="tnum px-3 py-2.5 text-right text-[#1b2333]">{h.propensity.toFixed(2)}</td>
-                    <td className="tnum px-5 py-2.5 text-right text-[#1b2333]">{h.benefit.toFixed(2)}</td>
+                    <td className="tnum px-3 py-2.5 text-right text-[#1b2333]">{pct(h.propensity)}</td>
+                    <td className="tnum px-5 py-2.5 text-right text-[#1b2333]">{pct(h.benefit)}</td>
                   </tr>
                 )
               })}

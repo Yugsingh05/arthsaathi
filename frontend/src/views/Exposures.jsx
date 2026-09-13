@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Panel, Pill, Stat, cx } from '../components/ui'
+import { Panel, Pill, Stat, cx, pct } from '../components/ui'
 import { api } from '../api'
 
 const GRADE = {
@@ -124,7 +124,7 @@ export default function Exposures() {
                             <span className="text-[13.5px] font-semibold text-[#14306b]">{twin.entity}</span>
                             <span className="tnum text-[12.5px] text-[#4a5468]">{cr(twin.exposure_cr)}</span>
                             <span className="tnum text-[12.5px] font-semibold text-red-600">
-                              risk {twin.risk_score.toFixed(2)}
+                              risk {pct(twin.risk_score)}
                             </span>
                           </div>
                           <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#77809a]">
@@ -220,13 +220,13 @@ export default function Exposures() {
                     <td className="tnum whitespace-nowrap px-3 py-2.5 text-right text-[#4a5468]">{cr(r.exposure_cr)}</td>
                     <td className={cx('tnum px-3 py-2.5 text-right',
                       r.collateral_cover < 0.8 ? 'font-semibold text-red-600' : 'text-[#4a5468]')}>
-                      {r.collateral_cover.toFixed(2)}
+                      {pct(r.collateral_cover)}
                     </td>
                     <td className={cx('tnum px-3 py-2.5 text-right',
                       r.dscr < 1 ? 'font-semibold text-red-600' : 'text-[#4a5468]')}>{r.dscr.toFixed(2)}</td>
                     <td className="px-3 py-2.5 text-right">
                       <span className="inline-flex items-center gap-2">
-                        <span className="tnum font-semibold text-[#1b2333]">{r.risk_score.toFixed(2)}</span>
+                        <span className="tnum font-semibold text-[#1b2333]">{pct(r.risk_score)}</span>
                         <Pill tone={tone}>{label}</Pill>
                       </span>
                     </td>

@@ -1,4 +1,4 @@
-import { AreaChart, Bar, Card, KeyValue, Panel, Pill, Stat, cx, inr } from '../components/ui'
+import { AreaChart, Bar, Card, KeyValue, Panel, Pill, Stat, cx, inr, pct } from '../components/ui'
 
 export default function Overview({ view, timeline, t, onGo }) {
   const f = Object.fromEntries(view.features.map((x) => [x.key, x]))
@@ -9,10 +9,10 @@ export default function Overview({ view, timeline, t, onGo }) {
   return (
     <div className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label={t('kpi_stress')} value={view.stress.score.toFixed(2)}
+        <Stat label={t('kpi_stress')} value={pct(view.stress.score)}
           tone={stressed ? 'bad' : view.stress.score > 0.3 ? 'warn' : 'good'}
           sub={stressed ? t('credit_paused_days', { n: view.stress.pause_days }) : t('below_threshold')} />
-        <Stat label={t('kpi_fraud')} value={view.fraud.score.toFixed(2)}
+        <Stat label={t('kpi_fraud')} value={pct(view.fraud.score)}
           tone={fraud ? 'bad' : 'good'}
           sub={fraud ? t('hold_active') : t('normal_activity')} />
         <Stat label={t('kpi_income')} value={inr(f.monthly_income.value, true)}
@@ -90,7 +90,7 @@ export default function Overview({ view, timeline, t, onGo }) {
                   <div className="mb-1.5 flex items-center justify-between gap-3">
                     <span className="text-[13.5px] font-semibold text-[#14306b]">{r.name_en}</span>
                     <span className="tnum text-[12px] text-[#8a93a8]">
-                      benefit {r.benefit.toFixed(2)} · propensity {r.propensity.toFixed(2)}
+                      benefit {pct(r.benefit)} · propensity {pct(r.propensity)}
                     </span>
                   </div>
                   <p className="text-[13px] leading-relaxed text-[#4a5468]">{r.reason_line}</p>

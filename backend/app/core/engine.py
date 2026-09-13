@@ -250,7 +250,7 @@ class Engine:
             elif k == "inflow_30d_delta":
                 disp = f"{v * 100:+.0f}%"
             else:
-                disp = f"{v:.2f}"
+                disp = f"{v * 100:.0f}%"
             out.append(dict(key=k, label=labels.get(k, label), value=round(v, 4), display=disp))
         return out
 

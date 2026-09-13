@@ -7,6 +7,8 @@ export const inr = (n, compact = false) => {
   return `₹${Math.round(v).toLocaleString('en-IN')}`
 }
 
+export const pct = (n, digits = 0) => `${(Number(n || 0) * 100).toFixed(digits)}%`
+
 export function Card({ className, children }) {
   return <div className={cx('rounded-xl border border-[#e6e8ef] bg-white', className)}>{children}</div>
 }
@@ -64,7 +66,7 @@ export function Bar({ value, tone = 'blue', showValue = true, label }) {
       {(label || showValue) && (
         <div className="mb-1.5 flex items-baseline justify-between">
           {label && <span className="text-[12px] text-[#77809a]">{label}</span>}
-          {showValue && <span className="tnum text-[13px] font-semibold text-[#1b2333]">{value.toFixed(2)}</span>}
+          {showValue && <span className="tnum text-[13px] font-semibold text-[#1b2333]">{pct(value)}</span>}
         </div>
       )}
       <div className="h-1.5 overflow-hidden rounded-full bg-[#eceef4]">
