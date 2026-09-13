@@ -654,6 +654,64 @@ export const STRINGS = {
   "hi": "खाता खोलना",
   "gu": "ખાતું ખોલવું"
  },
+ "journey_step_purpose": {
+  "en": "Purpose", "hi": "उद्देश्य", "gu": "હેતુ"
+ },
+ "journey_step_amount": {
+  "en": "Amount", "hi": "राशि", "gu": "રકમ"
+ },
+ "journey_step_tenure": {
+  "en": "Tenure", "hi": "अवधि", "gu": "મુદત"
+ },
+ "journey_step_affordability": {
+  "en": "Affordability", "hi": "सामर्थ्य जाँच", "gu": "પરવડે તે તપાસ"
+ },
+ "journey_step_pan": {
+  "en": "PAN", "hi": "PAN", "gu": "PAN"
+ },
+ "journey_step_aadhaar_consent": {
+  "en": "Aadhaar consent", "hi": "आधार सहमति", "gu": "આધાર સંમતિ"
+ },
+ "journey_step_kfs": {
+  "en": "Key Facts Statement", "hi": "मुख्य तथ्य विवरण", "gu": "મુખ્ય માહિતી નિવેદન"
+ },
+ "journey_step_done": {
+  "en": "Complete", "hi": "पूर्ण", "gu": "પૂર્ણ"
+ },
+ "journey_step_mobile": {
+  "en": "Mobile number", "hi": "मोबाइल नंबर", "gu": "મોબાઇલ નંબર"
+ },
+ "journey_step_otp": {
+  "en": "OTP", "hi": "OTP", "gu": "OTP"
+ },
+ "journey_step_purpose_consent": {
+  "en": "Purpose consent", "hi": "उद्देश्य सहमति", "gu": "હેતુ સંમતિ"
+ },
+ "kfs_borrow": {
+  "en": "You borrow", "hi": "आप उधार लेते हैं", "gu": "તમે ઉધાર લો છો"
+ },
+ "kfs_monthly": {
+  "en": "Every month", "hi": "हर महीने", "gu": "દર મહિને"
+ },
+ "kfs_interest": {
+  "en": "Interest rate", "hi": "ब्याज दर", "gu": "વ્યાજ દર"
+ },
+ "kfs_processing": {
+  "en": "Processing fee", "hi": "प्रोसेसिंग शुल्क", "gu": "પ્રોસેસિંગ ફી"
+ },
+ "kfs_total": {
+  "en": "Total you repay", "hi": "कुल चुकौती", "gu": "કુલ ચુકવણી"
+ },
+ "journey_halt_detail": {
+  "en": "The affordability check read a live stress score of {score} and refused to continue the application.",
+  "hi": "सामर्थ्य जाँच में लाइव तनाव स्कोर {score} आया, इसलिए आवेदन आगे नहीं बढ़ाया गया।",
+  "gu": "પરવડે તે તપાસમાં લાઇવ તણાવ સ્કોર {score} આવ્યો, તેથી અરજી આગળ વધારવામાં આવી નથી."
+ },
+ "journey_halt_audit": {
+  "en": "Recorded in the audit trail as loan_journey_stopped.",
+  "hi": "ऑडिट रिकॉर्ड में loan_journey_stopped के रूप में दर्ज।",
+  "gu": "ઑડિટ રેકોર્ડમાં loan_journey_stopped તરીકે નોંધાયું."
+ },
  "in_queue": {
   "en": "In review queue",
   "hi": "समीक्षा सूची में",

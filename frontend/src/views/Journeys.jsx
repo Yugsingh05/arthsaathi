@@ -13,19 +13,19 @@ const REGULATED = ['pan', 'aadhaar_consent', 'purpose_consent', 'kfs', 'affordab
 // stop there rather than fall off the list.
 const HALT_AT = { stress_stop: 'affordability' }
 
-function KfsCard({ kfs }) {
+function KfsCard({ kfs, t }) {
   const figures = [
-    ['You borrow', inr(kfs.amount)],
-    ['Every month', `${inr(kfs.emi)} × ${kfs.months}`],
-    ['Interest rate', `${kfs.rate}% p.a.`],
+    [t('kfs_borrow'), inr(kfs.amount)],
+    [t('kfs_monthly'), `${inr(kfs.emi)} × ${kfs.months}`],
+    [t('kfs_interest'), `${kfs.rate}% p.a.`],
     ['APR', `${kfs.apr}%`],
-    ['Processing fee', inr(kfs.processing_fee)],
-    ['Total you repay', inr(kfs.total_repayable)],
+    [t('kfs_processing'), inr(kfs.processing_fee)],
+    [t('kfs_total'), inr(kfs.total_repayable)],
   ]
   return (
     <div className="mt-2.5 overflow-hidden rounded-lg border border-[#e6e8ef] bg-white">
       <p className="border-b border-[#eef0f5] bg-[#fafbfd] px-3 py-2 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#8a93a8]">
-        Key Facts Statement
+        {t('journey_step_kfs')}
       </p>
       <dl className="divide-y divide-[#f0f2f7]">
         {figures.map(([k, v]) => (
@@ -140,7 +140,7 @@ export default function Journeys({ customerId, lang, asOf, t }) {
                       {m.meta.offer?.map((o) => <Pill key={o} tone="amber">{o.replace(/_/g, ' ')}</Pill>)}
                     </div>
                   )}
-                  {m.meta?.kfs && <KfsCard kfs={m.meta.kfs} />}
+                  {m.meta?.kfs && <KfsCard kfs={m.meta.kfs} t={t} />}
                 </div>
               </div>
             ))}
@@ -216,7 +216,7 @@ export default function Journeys({ customerId, lang, asOf, t }) {
                   </span>
                   <span className={cx('flex-1 text-[13px] capitalize',
                     current ? 'font-semibold text-[#14306b]' : 'text-[#4a5468]')}>
-                    {s.replace(/_/g, ' ')}
+                    {t(`journey_step_${s}`)}
                   </span>
                   {REGULATED.includes(s) && <Pill tone="blue">{t('required')}</Pill>}
                 </li>
@@ -228,14 +228,13 @@ export default function Journeys({ customerId, lang, asOf, t }) {
         {state?.halted && (
           <Panel title={t('journey_stopped')}>
             <p className="text-[13px] leading-relaxed text-[#4a5468]">
-              The affordability check read a live stress score of <b className="tnum">{pct(state.stress?.score)}</b> and
-              refused to continue the application.
+              {t('journey_halt_detail', { score: pct(state.stress?.score) })}
             </p>
             <div className="mt-2.5 flex flex-wrap gap-1.5">
               {state.stress?.fired.map((f) => <Pill key={f.code} tone="amber">{f.code}</Pill>)}
             </div>
             <p className="mt-3 text-[12px] text-[#77809a]">
-              Recorded in the audit trail as loan_journey_stopped.
+              {t('journey_halt_audit')}
             </p>
           </Panel>
         )}
